@@ -18,13 +18,13 @@ As of 02/07/2025, it works thusly:
 	This script chooses a random video from the longform folder.
 	It then it chooses a random 10 minute segment from its duration (unless the chosen video is less than 10 minutes, then it uses the whole thing).
 	
-	It uses openCV to choose a decent screenshot, applies a border and soft filter using ffmpeg, and crops the aspect ratio to 9:16.
+	It uses openCV to choose a decent screenshot, applies a border and soft filter using ffmpeg.
 	This will be the thumbnail, but hasn't been tested for optimization much. 
 
 	It then picks a random video from the Minecraft parkour folder, and clips a segment from it which is equal in length to the above clip (currently hardcoded as 10 minutes, unless the video is shorter).
 
 	The two equal length clips (one from the longform video, one from the parkour video) are then stacked to make a single video file.
 
-	The final (usually 10 minute long) video is then cropped (dynamically, for face detection using openCV) to 9:16 and cut into 2 minute long segments.
+	The final (usually 10 minute long) video is then cut into 2 minute long segments.
 
 	

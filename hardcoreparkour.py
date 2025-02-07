@@ -191,7 +191,7 @@ def get_image_dimensions(image_path):
         return None, None
 
 def generate_thumbnail(movie_file, output_folder):
-    """Extracts keyframes, selects the best one as a thumbnail, applies vignette, border, and crops dynamically."""
+    """Extracts keyframes, selects the best one as a thumbnail, and applies vignette + border without cropping."""
     keyframes_folder = extract_keyframes(movie_file, output_folder)
 
     if not keyframes_folder:
@@ -204,24 +204,10 @@ def generate_thumbnail(movie_file, output_folder):
         final_thumbnail = os.path.join(output_folder, os.path.basename(movie_file).replace(".mp4", ".jpg"))
         enhanced_thumbnail = final_thumbnail.replace(".jpg", "_enhanced.jpg")
 
-        # Get the actual width and height of the selected keyframe
-        img_width, img_height = get_image_dimensions(best_frame)
-
-        if img_width is None or img_height is None:
-            print("Could not determine image dimensions, skipping cropping.")
-            img_width, img_height = 1280, 720  # Default fallback size
-
-        # Choose cropping dimensions
-        if img_width >= 1280 and img_height >= 720:
-            crop_width = 1280
-            crop_height = 720
-        else:
-            crop_width = img_width  # Use full width if too small
-            crop_height = img_height  # Use full height if too small
-
+        # Apply vignette & border, but NO cropping
         cmd = [
             "ffmpeg", "-y", "-i", best_frame,
-            f"-vf", f"vignette=PI/4, pad=width=iw+60:height=ih+60:x=30:y=30:color=black, crop={crop_width}:{crop_height}",
+            "-vf", "vignette=PI/4, pad=width=iw+60:height=ih+60:x=30:y=30:color=black",
             enhanced_thumbnail
         ]
 
@@ -240,6 +226,7 @@ def generate_thumbnail(movie_file, output_folder):
     shutil.rmtree(keyframes_folder, ignore_errors=True)
 
     return final_thumbnail
+
 def extract_middle_frame(video_file, output_folder):
     """Extracts a single frame from the middle of the video as a fallback thumbnail."""
     middle_time = get_duration(video_file) // 2
@@ -334,13 +321,13 @@ def ffmpeg_extract(input_file, start_time, output_file):
 
 
 def stack_videos(top_video, bottom_video, output_folder, movie_file):
-    """Stack two videos vertically, then crop dynamically based on detected faces."""
+    """Stack two videos vertically without cropping."""
     movie_name = os.path.splitext(os.path.basename(movie_file))[0]  # Keep original movie title
     movie_name = movie_name.replace(" ", "_")  # Remove spaces for clean filenames
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")  # Unique timestamp
     output_file = os.path.join(output_folder, f"{movie_name}_{timestamp}.mp4")  # Stacked video name
 
-    # Step 1: Stack Videos
+    # Step 1: Stack Videos (No cropping!)
     cmd_stack = [
         'ffmpeg', '-y',
         '-threads', '4',
@@ -366,13 +353,7 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
         print(f"Error stacking videos: {e}")
         sys.exit(1)
 
-    # Step 2: Crop Video Based on Faces
-    cropped_video = crop_video_based_on_faces(output_file, output_folder)
-
-    if cropped_video:
-        output_file = cropped_video  # Use cropped version
-
-    # Step 3: Split into 2-minute segments
+    # Step 2: Split into 2-minute segments
     split_output_template = os.path.join(output_folder, f"{movie_name}_part_%02d.mp4")
     
     cmd_split = [
@@ -393,7 +374,7 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
         print(f"Error splitting video: {e}")
         sys.exit(1)
 
-    return output_file  # Return the cropped & segmented file
+    return output_file  # Return the original stacked file
 
 if __name__ == "__main__":
     main()
