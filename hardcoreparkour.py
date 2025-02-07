@@ -177,7 +177,7 @@ def crop_video_based_on_faces(input_video, output_folder):
 import shutil  # Imported some things mid script to see where i used them
 
 def generate_thumbnail(movie_file, output_folder):
-    """Extracts keyframes, selects the best one as a thumbnail, and applies vignette + border."""
+    """Extracts keyframes, selects the best one as a thumbnail, applies vignette, border, and crops to 1280x720."""
     keyframes_folder = extract_keyframes(movie_file, output_folder)
 
     if not keyframes_folder:
@@ -188,16 +188,15 @@ def generate_thumbnail(movie_file, output_folder):
 
     if best_frame:
         final_thumbnail = os.path.join(output_folder, os.path.basename(movie_file).replace(".mp4", ".jpg"))
-        
-        # Apply vignette + border effect
         enhanced_thumbnail = final_thumbnail.replace(".jpg", "_enhanced.jpg")
-        
+
+        # Apply vignette, border, and crop to 1280x720
         cmd = [
             "ffmpeg", "-y", "-i", best_frame,
-            "-vf", "vignette=PI/4, pad=width=iw+60:height=ih+60:x=30:y=30:color=black",
+            "-vf", "vignette=PI/4, pad=width=iw+60:height=ih+60:x=30:y=30:color=black, crop=1080:1920",
             enhanced_thumbnail
         ]
-        
+
         try:
             subprocess.run(cmd, check=True)
             print(f"Thumbnail saved: {enhanced_thumbnail}")
