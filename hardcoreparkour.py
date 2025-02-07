@@ -22,13 +22,14 @@ def find_video_files(folder):
                 video_files.append(os.path.join(root, file))
     return video_files
 
-def pick_random_file(folder):
-    """Pick a random video file from the specified folder"""
+def pick_random_file(folder, min_length=CLIP_DURATION):
+    """Pick a random video file that is at least the required length."""
     files = find_video_files(folder)
-    if not files:
-        print(f"No video files found in {folder}")
+    valid_files = [f for f in files if get_duration(f) >= min_length]
+    if not valid_files:
+        print(f"No valid video files longer than {min_length} seconds found in {folder}")
         sys.exit(1)
-    return random.choice(files)
+    return random.choice(valid_files)
 
 def get_duration(file_path):
     """Get duration of video file in seconds using ffprobe"""
@@ -78,33 +79,50 @@ def extract_keyframes(video_file, output_folder):
 
     return keyframes_folder
 
+import cv2
+
 def choose_best_thumbnail(keyframes_folder):
-    """Selects the best thumbnail from extracted keyframes using brightness and sharpness."""
-    best_frame = None
-    best_score = 0
+    """Select the best keyframe by prioritizing one with a face, otherwise default to the brightest frame."""
+    keyframe_files = sorted(os.listdir(keyframes_folder))
+    
+    if not keyframe_files:
+        print("No keyframes found.")
+        return None
 
-    for frame_file in sorted(os.listdir(keyframes_folder)):  # Sort ensures order
-        frame_path = os.path.join(keyframes_folder, frame_file)
-        image = cv2.imread(frame_path, cv2.IMREAD_GRAYSCALE)
+    best_face_frame = None
+    best_brightness = 0
+    best_brightness_frame = None
 
-        if image is None:
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+
+    for file in keyframe_files:
+        frame_path = os.path.join(keyframes_folder, file)
+        img = cv2.imread(frame_path)
+        
+        if img is None:
             continue
 
-        # Calculate sharpness using variance of the Laplacian
-        sharpness = cv2.Laplacian(image, cv2.CV_64F).var()
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(50, 50))
 
-        # Calculate brightness as the mean pixel intensity
-        brightness = np.mean(image)
+        if len(faces) > 0:
+            print(f"✅ Found a face in {file} - Selecting this as thumbnail")
+            return frame_path  # If a face is detected, return immediately
 
-        # Score = Sharpness + (Brightness * Weight)
-        score = sharpness + (brightness * 1.5)
+        # Otherwise, check brightness
+        brightness = cv2.mean(gray)[0]
+        if brightness > best_brightness:
+            best_brightness = brightness
+            best_brightness_frame = frame_path
 
-        if score > best_score:
-            best_score = score
-            best_frame = frame_path
+    # If no faces were found, fallback to the brightest frame
+    if best_brightness_frame:
+        print(f"⚠️ No faces found, using brightest frame instead: {best_brightness_frame}")
+        return best_brightness_frame
 
-    return best_frame
+    return None  # If no valid frames are found
 
+# detect_faces_in_video is deprecated for now
 def detect_faces_in_video(video_path):
     """Detect faces in a sample of frames from a video to determine the best crop area."""
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
@@ -141,6 +159,7 @@ def detect_faces_in_video(video_path):
 
     return avg_x, avg_y, avg_w, avg_h
 
+# crop_video_based_on_faces is deprecated for now
 def crop_video_based_on_faces(input_video, output_folder):
     """Crop the video to center around detected faces."""
     face_coords = detect_faces_in_video(input_video)
@@ -190,8 +209,10 @@ def get_image_dimensions(image_path):
         print(f"Error getting image dimensions: {e}")
         return None, None
 
+import shutil  # Make sure shutil is imported
+
 def generate_thumbnail(movie_file, output_folder):
-    """Extracts keyframes, selects the best one as a thumbnail, and applies vignette + border without cropping."""
+    """Extracts keyframes, selects the best one as a thumbnail, applies vignette + border, and cleans up."""
     keyframes_folder = extract_keyframes(movie_file, output_folder)
 
     if not keyframes_folder:
@@ -204,10 +225,11 @@ def generate_thumbnail(movie_file, output_folder):
         final_thumbnail = os.path.join(output_folder, os.path.basename(movie_file).replace(".mp4", ".jpg"))
         enhanced_thumbnail = final_thumbnail.replace(".jpg", "_enhanced.jpg")
 
-        # Apply vignette & border, but NO cropping
+        # Apply vignette & border, ensuring proper format
         cmd = [
             "ffmpeg", "-y", "-i", best_frame,
-            "-vf", "vignette=PI/4, pad=width=iw+60:height=ih+60:x=30:y=30:color=black",
+            "-vf", "vignette=PI/4, pad=width=iw+60:height=ih+60:x=30:y=30:color=black, format=yuvj420p",
+            "-update", "1", "-frames:v", "1",
             enhanced_thumbnail
         ]
 
@@ -223,7 +245,9 @@ def generate_thumbnail(movie_file, output_folder):
         final_thumbnail = extract_middle_frame(movie_file, output_folder)  # Fallback
 
     # Cleanup extracted keyframes
-    shutil.rmtree(keyframes_folder, ignore_errors=True)
+    if os.path.exists(keyframes_folder):
+        shutil.rmtree(keyframes_folder, ignore_errors=True)
+        print(f"Deleted keyframes folder: {keyframes_folder}")
 
     return final_thumbnail
 
@@ -353,7 +377,24 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
     resize_video(bottom_video, resized_bottom, target_width)
 
     # Step 2: Stack Videos
-    cmd_stack = ["ffmpeg", "-y", "-threads", "4", "-i", resized_top, "-i", resized_bottom, "-filter_complex", "[0:v]fps=30[v0];[1:v]fps=30[v1];[v0][v1]vstack=inputs=2[v]", "-map", "[v]", "-map", "0:a?", "-map", "1:a?", "-c:v", "libx264", "-preset", "ultrafast", "-crf", "28", "-c:a", "aac", "-b:a", "128k", output_file]
+    cmd_stack = [
+        'ffmpeg', '-y',
+        '-threads', '4',
+        '-i', resized_top,
+        '-i', resized_bottom,
+        '-filter_complex', '[0:v]fps=30[v0];[1:v]fps=30[v1];[v0][v1]vstack=inputs=2[v]',
+        '-map', '[v]',
+        '-map', '0:a?',
+        '-map', '1:a?',
+        '-c:v', 'libx264',
+        '-preset', 'ultrafast',
+        '-crf', '28',
+        '-c:a', 'aac',
+        '-b:a', '128k',
+        '-shortest',  # ✅ Ensures video stops when the shorter one ends
+        output_file
+    ]
+
 
     try:
         subprocess.run(cmd_stack, check=True)
