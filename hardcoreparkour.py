@@ -321,30 +321,39 @@ def ffmpeg_extract(input_file, start_time, output_file):
 
 
 def stack_videos(top_video, bottom_video, output_folder, movie_file):
-    """Stack two videos vertically without cropping."""
-    movie_name = os.path.splitext(os.path.basename(movie_file))[0]  # Keep original movie title
-    movie_name = movie_name.replace(" ", "_")  # Remove spaces for clean filenames
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")  # Unique timestamp
-    output_file = os.path.join(output_folder, f"{movie_name}_{timestamp}.mp4")  # Stacked video name
+    """Stack two videos vertically after resizing them to the same width and split into 2-minute clips."""
+    movie_name = os.path.splitext(os.path.basename(movie_file))[0]
+    movie_name = movie_name.replace(" ", "_")
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_file = os.path.join(output_folder, f"{movie_name}_{timestamp}.mp4")
 
-    # Step 1: Stack Videos (No cropping!)
-    cmd_stack = [
-        'ffmpeg', '-y',
-        '-threads', '4',
-        '-i', top_video,
-        '-i', bottom_video,
-        '-filter_complex', '[0:v]fps=30[v0];[1:v]fps=30[v1];[v0][v1]vstack=inputs=2[v]',
-        '-map', '[v]',
-        '-map', '0:a?',
-        '-map', '1:a?',
-        '-c:v', 'libx264',
-        '-preset', 'ultrafast',
-        '-crf', '28',
-        '-c:a', 'aac',
-        '-b:a', '128k',
-        '-shortest',
-        output_file
-    ]
+    # Step 1: Resize Videos
+    def get_video_width(video_path):
+        cmd = ["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width", "-of", "csv=p=0", video_path]
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            return int(result.stdout.strip())
+        except Exception as e:
+            print(f"Error getting width of {video_path}: {e}")
+            return None
+
+    top_width, bottom_width = get_video_width(top_video), get_video_width(bottom_video)
+    if not top_width or not bottom_width:
+        print("Error determining video widths.")
+        sys.exit(1)
+
+    target_width = min(top_width, bottom_width)
+    resized_top, resized_bottom = os.path.join(output_folder, "resized_top.mp4"), os.path.join(output_folder, "resized_bottom.mp4")
+
+    def resize_video(input_file, output_file, width):
+        cmd = ["ffmpeg", "-y", "-i", input_file, "-vf", f"scale={width}:-2", "-c:v", "libx264", "-crf", "23", "-preset", "fast", "-c:a", "aac", "-b:a", "128k", output_file]
+        subprocess.run(cmd, check=True)
+
+    resize_video(top_video, resized_top, target_width)
+    resize_video(bottom_video, resized_bottom, target_width)
+
+    # Step 2: Stack Videos
+    cmd_stack = ["ffmpeg", "-y", "-threads", "4", "-i", resized_top, "-i", resized_bottom, "-filter_complex", "[0:v]fps=30[v0];[1:v]fps=30[v1];[v0][v1]vstack=inputs=2[v]", "-map", "[v]", "-map", "0:a?", "-map", "1:a?", "-c:v", "libx264", "-preset", "ultrafast", "-crf", "28", "-c:a", "aac", "-b:a", "128k", output_file]
 
     try:
         subprocess.run(cmd_stack, check=True)
@@ -352,20 +361,16 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
     except subprocess.CalledProcessError as e:
         print(f"Error stacking videos: {e}")
         sys.exit(1)
+    finally:
+        for f in [resized_top, resized_bottom]:
+            if os.path.exists(f):
+                os.remove(f)
+                print(f"Deleted temporary file: {f}")
 
-    # Step 2: Split into 2-minute segments
+    # Step 3: Split Video into 2-Minute Segments
     split_output_template = os.path.join(output_folder, f"{movie_name}_part_%02d.mp4")
     
-    cmd_split = [
-        'ffmpeg', '-y',
-        '-i', output_file,
-        '-c', 'copy',
-        '-map', '0',
-        '-segment_time', '120',  # 2-minute segments
-        '-f', 'segment',
-        '-reset_timestamps', '1',
-        split_output_template
-    ]
+    cmd_split = ["ffmpeg", "-y", "-i", output_file, "-c", "copy", "-map", "0", "-segment_time", "120", "-f", "segment", "-reset_timestamps", "1", split_output_template]
 
     try:
         subprocess.run(cmd_split, check=True)
@@ -374,7 +379,7 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
         print(f"Error splitting video: {e}")
         sys.exit(1)
 
-    return output_file  # Return the original stacked file
+    return output_file  # Return the stacked file
 
 if __name__ == "__main__":
     main()
