@@ -175,9 +175,23 @@ def crop_video_based_on_faces(input_video, output_folder):
     return output_cropped
 
 import shutil  # Imported some things mid script to see where i used them
+def get_image_dimensions(image_path):
+    """Get the width and height of an image using FFmpeg."""
+    cmd = [
+        "ffprobe", "-v", "error", "-select_streams", "v:0",
+        "-show_entries", "stream=width,height", "-of", "csv=p=0",
+        image_path
+    ]
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        width, height = map(int, result.stdout.strip().split(","))
+        return width, height
+    except Exception as e:
+        print(f"Error getting image dimensions: {e}")
+        return None, None
 
 def generate_thumbnail(movie_file, output_folder):
-    """Extracts keyframes, selects the best one as a thumbnail, applies vignette, border, and crops to 1280x720."""
+    """Extracts keyframes, selects the best one as a thumbnail, applies vignette, border, and crops dynamically."""
     keyframes_folder = extract_keyframes(movie_file, output_folder)
 
     if not keyframes_folder:
@@ -190,10 +204,24 @@ def generate_thumbnail(movie_file, output_folder):
         final_thumbnail = os.path.join(output_folder, os.path.basename(movie_file).replace(".mp4", ".jpg"))
         enhanced_thumbnail = final_thumbnail.replace(".jpg", "_enhanced.jpg")
 
-        # Apply vignette, border, and crop to 1280x720
+        # Get the actual width and height of the selected keyframe
+        img_width, img_height = get_image_dimensions(best_frame)
+
+        if img_width is None or img_height is None:
+            print("Could not determine image dimensions, skipping cropping.")
+            img_width, img_height = 1280, 720  # Default fallback size
+
+        # Choose cropping dimensions
+        if img_width >= 1280 and img_height >= 720:
+            crop_width = 1280
+            crop_height = 720
+        else:
+            crop_width = img_width  # Use full width if too small
+            crop_height = img_height  # Use full height if too small
+
         cmd = [
             "ffmpeg", "-y", "-i", best_frame,
-            "-vf", "vignette=PI/4, pad=width=iw+60:height=ih+60:x=30:y=30:color=black, crop=1080:1920",
+            f"-vf", f"vignette=PI/4, pad=width=iw+60:height=ih+60:x=30:y=30:color=black, crop={crop_width}:{crop_height}",
             enhanced_thumbnail
         ]
 
@@ -212,7 +240,6 @@ def generate_thumbnail(movie_file, output_folder):
     shutil.rmtree(keyframes_folder, ignore_errors=True)
 
     return final_thumbnail
-
 def extract_middle_frame(video_file, output_folder):
     """Extracts a single frame from the middle of the video as a fallback thumbnail."""
     middle_time = get_duration(video_file) // 2
@@ -238,7 +265,7 @@ def extract_middle_frame(video_file, output_folder):
 def main():
     output_folder = "C:/Users/austi/Desktop/hardcoreparkour/random clips"
     
-    for i in range(10):  # Run X times
+    for i in range(1):  # Run X times
 
         # Create temporary files
         temp_dir = tempfile.gettempdir()
