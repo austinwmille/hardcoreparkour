@@ -345,7 +345,7 @@ def ffmpeg_extract(input_file, start_time, output_file):
 
 
 def stack_videos(top_video, bottom_video, output_folder, movie_file):
-    """Stack two videos vertically after resizing them to the same width and split into 2-minute clips."""
+    """Stack two videos vertically, transcribe audio, generate a title, and split into 2-minute clips."""
     movie_name = os.path.splitext(os.path.basename(movie_file))[0]
     movie_name = movie_name.replace(" ", "_")
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -391,36 +391,96 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
         '-crf', '28',
         '-c:a', 'aac',
         '-b:a', '128k',
-        '-shortest',  # ✅ Ensures video stops when the shorter one ends
+        '-shortest',  # Ensures video stops when the shorter one ends
         output_file
     ]
 
-
     try:
         subprocess.run(cmd_stack, check=True)
-        print(f"Final stacked video created: {output_file}")
+        print(f"✅ Final stacked video created: {output_file}")
     except subprocess.CalledProcessError as e:
-        print(f"Error stacking videos: {e}")
+        print(f"❌ Error stacking videos: {e}")
         sys.exit(1)
     finally:
         for f in [resized_top, resized_bottom]:
             if os.path.exists(f):
                 os.remove(f)
-                print(f"Deleted temporary file: {f}")
+                print(f"🗑 Deleted temporary file: {f}")
 
-    # Step 3: Split Video into 2-Minute Segments
+    # Step 3: 🎙 Transcribe video & generate title BEFORE splitting
+    transcript = transcribe_video_whisperx(output_file)  # Get transcript
+    title = generate_final_title(movie_file, transcript)  # Generate title
+    print(f"🎬 Auto-generated title: {title}")
+
+    # Step 4: Split Video into 2-Minute Segments
     split_output_template = os.path.join(output_folder, f"{movie_name}_part_%02d.mp4")
     
     cmd_split = ["ffmpeg", "-y", "-i", output_file, "-c", "copy", "-map", "0", "-segment_time", "120", "-f", "segment", "-reset_timestamps", "1", split_output_template]
 
     try:
         subprocess.run(cmd_split, check=True)
-        print(f"Video split into 2-minute segments: {split_output_template}")
+        print(f"✅ Video split into 2-minute segments: {split_output_template}")
     except subprocess.CalledProcessError as e:
-        print(f"Error splitting video: {e}")
+        print(f"❌ Error splitting video: {e}")
         sys.exit(1)
 
     return output_file  # Return the stacked file
+
+import re
+from collections import Counter
+
+def generate_title_from_filename(movie_file):
+    """Generate a title from the original filename."""
+    base_name = os.path.basename(movie_file).replace(".mp4", "")
+    cleaned_title = re.sub(r'[_\-0-9]', ' ', base_name)  # Remove special chars
+    return ' '.join([word.capitalize() for word in cleaned_title.split()])  # Capitalize words
+
+def generate_title_from_transcript(transcript_text, weight=0.3):
+    """Extract top keywords from transcript but limit their influence."""
+    words = re.findall(r'\b\w+\b', transcript_text.lower())  # Extract words
+    ignore_words = {"the", "and", "to", "is", "of", "a", "in", "that", "it", "on", "with", "this", "for"}
+    filtered_words = [word for word in words if word not in ignore_words]
+    common_words = Counter(filtered_words).most_common(5)  # Get top 5 keywords
+
+    # Keep only a percentage of transcript-based words (e.g., 30% weight)
+    num_to_include = max(1, int(len(common_words) * weight))  # Ensure at least 1 word
+    transcript_keywords = ' '.join([word.capitalize() for word, _ in common_words[:num_to_include]])
+
+    return transcript_keywords
+
+def generate_final_title(movie_file, transcript_text=None):
+    """Prioritize the movie filename and add transcript keywords only if useful."""
+    filename_title = generate_title_from_filename(movie_file)
+
+    if transcript_text:
+        transcript_title = generate_title_from_transcript(transcript_text)
+
+        # Only add transcript keywords if they add new meaning
+        if transcript_title and transcript_title.lower() not in filename_title.lower():
+            return f"{filename_title} – {transcript_title}"  # Keep the filename as the main part
+
+    return filename_title  # Default to just the filename if transcript is weak
+
+import whisperx
+import torch
+
+def transcribe_video_whisperx(video_path):
+    """Transcribe audio from a video using WhisperX."""
+    print(f"🎙 Transcribing: {video_path}...")
+
+    # Load WhisperX model
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model = whisperx.load_model("base", device)
+
+    # Transcribe audio
+    audio = whisperx.load_audio(video_path)
+    result = model.transcribe(audio)
+
+    # Extract transcript text
+    transcript_text = " ".join([seg["text"] for seg in result["segments"]])
+
+    print(f"✅ Transcription complete: {len(transcript_text)} characters")
+    return transcript_text
 
 if __name__ == "__main__":
     main()
