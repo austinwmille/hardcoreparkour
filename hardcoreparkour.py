@@ -344,10 +344,11 @@ def ffmpeg_extract(input_file, start_time, output_file):
         sys.exit(1)
 
 
+import glob
+
 def stack_videos(top_video, bottom_video, output_folder, movie_file):
-    """Stack two videos vertically, transcribe audio, generate a title, and split into 2-minute clips."""
-    movie_name = os.path.splitext(os.path.basename(movie_file))[0]
-    movie_name = movie_name.replace(" ", "_")
+    """Stack two videos vertically, transcribe, generate a title, and split into numbered parts."""
+    movie_name = os.path.splitext(os.path.basename(movie_file))[0].replace(" ", "_")
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     output_file = os.path.join(output_folder, f"{movie_name}_{timestamp}.mp4")
 
@@ -391,7 +392,7 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
         '-crf', '28',
         '-c:a', 'aac',
         '-b:a', '128k',
-        '-shortest',  # Ensures video stops when the shorter one ends
+        '-shortest',
         output_file
     ]
 
@@ -408,13 +409,13 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
                 print(f"🗑 Deleted temporary file: {f}")
 
     # Step 3: 🎙 Transcribe video & generate title BEFORE splitting
-    transcript = transcribe_video_whisperx(output_file)  # Get transcript
-    title = generate_final_title(movie_file, transcript)  # Generate title
-    print(f"🎬 Auto-generated title: {title}")
+    transcript = transcribe_video_whisperx(output_file)
+    generated_title = generate_final_title(movie_file, transcript)
+    safe_title = re.sub(r'[^\w\s-]', '', generated_title).replace(" ", "_")  # Remove special chars
 
     # Step 4: Split Video into 2-Minute Segments
-    split_output_template = os.path.join(output_folder, f"{movie_name}_part_%02d.mp4")
-    
+    split_output_template = os.path.join(output_folder, f"{safe_title}_part_%02d.mp4")
+
     cmd_split = ["ffmpeg", "-y", "-i", output_file, "-c", "copy", "-map", "0", "-segment_time", "120", "-f", "segment", "-reset_timestamps", "1", split_output_template]
 
     try:
@@ -423,6 +424,12 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
     except subprocess.CalledProcessError as e:
         print(f"❌ Error splitting video: {e}")
         sys.exit(1)
+
+    # Step 5: Rename Segments for Consistency
+    for index, segment_file in enumerate(sorted(glob.glob(os.path.join(output_folder, f"{safe_title}_part_*.mp4"))), start=1):
+        new_name = os.path.join(output_folder, f"{safe_title}_Part_{index}.mp4")
+        os.rename(segment_file, new_name)
+        print(f"🔄 Renamed {segment_file} -> {new_name}")
 
     return output_file  # Return the stacked file
 
