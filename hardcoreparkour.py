@@ -334,27 +334,44 @@ def main():
 
     print("All x videos are done!")
 
-def ffmpeg_extract(input_file, start_time, output_file):
-    """Extract a clip using ffmpeg and ensure audio stays in sync."""
-    cmd = [
-        'ffmpeg', '-y',
-        '-ss', str(start_time),
-        '-i', input_file,
-        '-t', str(CLIP_DURATION),
-        '-c:v', 'libx264',  # Re-encode video to ensure sync
-        '-preset', 'ultrafast',  # Speed up processing
-        '-crf', '23',  # Good balance of quality and size
-        '-c:a', 'aac',  # Ensure audio compatibility
-        '-b:a', '192k',  # Set higher audio bitrate
-        '-async', '1',  # Attempt to fix any sync issues
-        output_file
-    ]
-    try:
-        subprocess.run(cmd, check=True)
-    except subprocess.CalledProcessError as e:
-        print(f"Error extracting clip from {input_file}: {e}")
-        sys.exit(1)
+import subprocess
 
+def ffmpeg_extract(input_file, start_time, output_file, clip_duration=600):
+    """Extract a clip using ffmpeg, avoiding unnecessary re-encoding when possible."""
+    
+    # Check the codec of the input file
+    cmd_check = [
+        "ffprobe", "-v", "error", "-select_streams", "v:0",
+        "-show_entries", "stream=codec_name", "-of", "csv=p=0", input_file
+    ]
+    
+    codec_name = subprocess.run(cmd_check, capture_output=True, text=True).stdout.strip()
+
+    # ✅ If the video is already H.264, avoid re-encoding
+    if codec_name == "h264":
+        print(f"✅ Copying clip without re-encoding: {input_file}...")
+        cmd = [
+            "ffmpeg", "-y",
+            "-ss", str(start_time),
+            "-i", input_file,
+            "-t", str(clip_duration),
+            "-c:v", "copy", "-c:a", "copy",
+            output_file
+        ]
+    else:
+        print(f"🔹 Extracting & re-encoding clip: {input_file}...")
+        cmd = [
+            "ffmpeg", "-y",
+            "-ss", str(start_time),
+            "-i", input_file,
+            "-t", str(clip_duration),
+            "-c:v", "libx264", "-crf", "19", "-preset", "fast",
+            "-c:a", "aac", "-b:a", "128k",
+            "-threads", "4",
+            output_file
+        ]
+
+    subprocess.run(cmd, check=True)
 
 import glob
 
@@ -382,23 +399,50 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
     target_width = min(top_width, bottom_width)
     resized_top, resized_bottom = os.path.join(output_folder, "resized_top.mp4"), os.path.join(output_folder, "resized_bottom.mp4")
 
+    import subprocess
+
     def resize_video(input_file, output_file, width):
-        """Resize video while maintaining aspect ratio and optimizing encoding speed."""
-        cmd = [
-            "ffmpeg", "-y", "-i", input_file,
-            "-vf", f"scale={width}:-2",
-            "-c:v", "libx264", "-crf", "19", "-preset", "fast",
-            "-c:a", "aac", "-b:a", "128k",
-            "-threads", "4",  # Ensure threading is optimized
-            output_file  # Output file at the end
+        """Resize video only if necessary, avoiding unnecessary re-encoding."""
+        
+        # Check if video is already the correct width
+        cmd_check = [
+            "ffprobe", "-v", "error", "-select_streams", "v:0",
+            "-show_entries", "stream=width,codec_name", "-of", "csv=p=0", input_file
         ]
         
-        try:
-            print(f"🔹 Resizing {input_file} to width {width} with optimized settings...")
-            subprocess.run(cmd, check=True)
-            print(f"✅ Resized video saved as: {output_file}")
-        except subprocess.CalledProcessError as e:
-            print(f"❌ Error resizing video: {e}")
+        video_info = subprocess.run(cmd_check, capture_output=True, text=True).stdout.strip()
+        width_check, codec_name = video_info.split("\n")[0].split(",")  # Extract width & codec
+
+        if width_check == str(width) and codec_name == "h264":
+            # ✅ If already correct width and H.264, just copy (NO re-encoding!)
+            print(f"✅ Skipping resize, copying {input_file}...")
+            cmd = ["ffmpeg", "-y", "-i", input_file, "-c:v", "copy", "-c:a", "copy", output_file]
+        else:
+            # 🔹 If resizing is needed, use ultrafast CPU encoding OR GPU encoding if available
+            print(f"🔹 Resizing {input_file} to width {width}...")
+
+            # **Fastest Option: Use GPU (if available)**
+            gpu_available = False  # Change to True if you have an NVIDIA GPU and want to use NVENC
+            if gpu_available:
+                cmd = [
+                    "ffmpeg", "-y", "-hwaccel", "cuda", "-i", input_file,
+                    "-vf", f"scale={width}:-2",
+                    "-c:v", "h264_nvenc", "-preset", "fast", "-b:v", "5M",
+                    "-c:a", "aac", "-b:a", "128k",
+                    output_file
+                ]
+            else:
+                # **Fallback: Fastest CPU-based encoding**
+                cmd = [
+                    "ffmpeg", "-y", "-i", input_file,
+                    "-vf", f"scale={width}:-2",
+                    "-c:v", "libx264", "-preset", "ultrafast", "-crf", "19",
+                    "-c:a", "aac", "-b:a", "128k",
+                    "-threads", "8",  # Use more threads if available
+                    output_file
+                ]
+
+        subprocess.run(cmd, check=True)
 
     resize_video(top_video, resized_top, target_width)
     resize_video(bottom_video, resized_bottom, target_width)
