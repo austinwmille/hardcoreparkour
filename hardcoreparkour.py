@@ -382,15 +382,24 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
     output_file = os.path.join(output_folder, f"{movie_name}_{timestamp}.mp4")
 
     # Step 1: Resize Videos
-    def get_video_width(video_path):
-        cmd = ["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width", "-of", "csv=p=0", video_path]
+    import subprocess  # Ensure subprocess is imported at the top
+
+    def get_video_width(video_file):
+        """Returns the width of the video using ffprobe."""
         try:
+            cmd = [
+                "ffprobe", "-v", "error",
+                "-select_streams", "v:0",
+                "-show_entries", "stream=width",
+                "-of", "csv=p=0",
+                video_file
+            ]
             result = subprocess.run(cmd, capture_output=True, text=True, check=True)
             return int(result.stdout.strip())
         except Exception as e:
-            print(f"Error getting width of {video_path}: {e}")
-            return None
-
+            print(f"⚠️ Error getting width of {video_file}: {e}")
+            return None  # Return None instead of breaking the script
+            
     top_width, bottom_width = get_video_width(top_video), get_video_width(bottom_video)
     if not top_width or not bottom_width:
         print("Error determining video widths.")
