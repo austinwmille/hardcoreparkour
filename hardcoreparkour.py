@@ -80,47 +80,57 @@ def extract_keyframes(video_file, output_folder):
     return keyframes_folder
 
 import cv2
+import numpy as np
+
+def calculate_sharpness(image):
+    """Measure image sharpness using the Laplacian variance."""
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    return cv2.Laplacian(gray, cv2.CV_64F).var()
 
 def choose_best_thumbnail(keyframes_folder):
-    """Select the best keyframe by prioritizing one with a face, otherwise default to the brightest frame."""
+    """Select the best keyframe by prioritizing a clear, sharp face with open eyes."""
     keyframe_files = sorted(os.listdir(keyframes_folder))
     
     if not keyframe_files:
         print("No keyframes found.")
         return None
 
-    best_face_frame = None
-    best_brightness = 0
-    best_brightness_frame = None
-
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+    eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_eye.xml")  # Added eye detection
+
+    best_face_frame = None
+    best_score = 0  # Score based on sharpness & face size
 
     for file in keyframe_files:
         frame_path = os.path.join(keyframes_folder, file)
         img = cv2.imread(frame_path)
-        
+
         if img is None:
             continue
 
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(50, 50))
 
-        if len(faces) > 0:
-            print(f"✅ Found a face in {file} - Selecting this as thumbnail")
-            return frame_path  # If a face is detected, return immediately
+        for (x, y, w, h) in faces:
+            face_area = w * h  # Bigger face = better
+            sharpness = calculate_sharpness(img)
 
-        # Otherwise, check brightness
-        brightness = cv2.mean(gray)[0]
-        if brightness > best_brightness:
-            best_brightness = brightness
-            best_brightness_frame = frame_path
+            # Detect eyes inside the face region
+            face_roi = gray[y:y+h, x:x+w]
+            eyes = eye_cascade.detectMultiScale(face_roi, scaleFactor=1.1, minNeighbors=3)
 
-    # If no faces were found, fallback to the brightest frame
-    if best_brightness_frame:
-        print(f"⚠️ No faces found, using brightest frame instead: {best_brightness_frame}")
-        return best_brightness_frame
+            # Score: (bigger faces + more sharpness), ignore frames where no eyes are found (likely blinking)
+            score = face_area * 0.3 + sharpness * 0.7
+            if len(eyes) > 0 and score > best_score:
+                best_score = score
+                best_face_frame = frame_path
 
-    return None  # If no valid frames are found
+    if best_face_frame:
+        print(f"✅ Selected best frame: {best_face_frame} (Sharp & Good Face)")
+        return best_face_frame
+    else:
+        print("⚠️ No ideal face found, using brightest frame instead.")
+        return None  # Fallback to brightness logic if needed
 
 # detect_faces_in_video is deprecated for now
 def detect_faces_in_video(video_path):
@@ -419,14 +429,21 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
     cmd_split = ["ffmpeg", "-y", "-i", output_file, "-c", "copy", "-map", "0", "-segment_time", "120", "-f", "segment", "-reset_timestamps", "1", split_output_template]
 
     try:
+        print(f"🔹 Running split command: {' '.join(cmd_split)}")
         subprocess.run(cmd_split, check=True)
         print(f"✅ Video split into 2-minute segments: {split_output_template}")
     except subprocess.CalledProcessError as e:
         print(f"❌ Error splitting video: {e}")
         sys.exit(1)
 
+    split_files = sorted(glob.glob(os.path.join(output_folder, f"{safe_title}_part_*.mp4")))
+
+    if os.path.exists(output_file):
+        os.remove(output_file)
+        print(f"🗑 Deleted full video: {output_file}")
+
     # Step 5: Rename Segments for Consistency
-    for index, segment_file in enumerate(sorted(glob.glob(os.path.join(output_folder, f"{safe_title}_part_*.mp4"))), start=1):
+    for index, segment_file in enumerate(sorted(split_files), start=1):
         new_name = os.path.join(output_folder, f"{safe_title}_Part_{index}.mp4")
         os.rename(segment_file, new_name)
         print(f"🔄 Renamed {segment_file} -> {new_name}")
@@ -477,7 +494,10 @@ def transcribe_video_whisperx(video_path):
 
     # Load WhisperX model
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = whisperx.load_model("base", device)
+
+    # Force float32 precision to avoid the error
+    compute_type = "float32" if device == "cpu" else "float16"
+    model = whisperx.load_model("base", device, compute_type=compute_type)
 
     # Transcribe audio
     audio = whisperx.load_audio(video_path)
