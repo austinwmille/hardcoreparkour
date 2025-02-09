@@ -58,23 +58,25 @@ def pick_random_start(total_duration):
 import cv2
 import numpy as np
 
-def extract_keyframes(video_file, output_folder):
-    """Extracts keyframes from a video and saves them in a temporary folder."""
+def extract_keyframes(trimmed_video, output_folder):
+    """Extracts keyframes from the final 10-minute clip, not the original full video."""
     keyframes_folder = os.path.join(output_folder, "keyframes")
     os.makedirs(keyframes_folder, exist_ok=True)
-    
+
     cmd = [
         'ffmpeg', '-y',
-        '-i', video_file,
-        '-vf', "select='eq(pict_type\\,I)',scale=1280:720",  # Extracts keyframes only
+        '-i', trimmed_video,  # ⬅️ Now using the trimmed 10-minute clip!
+        '-vf', "select='eq(pict_type\\,I)',scale=1280:720",
         '-vsync', 'vfr',
         os.path.join(keyframes_folder, "frame_%04d.jpg")
     ]
-    
+
     try:
+        print(f"🔹 Extracting keyframes from final 10-minute clip: {trimmed_video}...")
         subprocess.run(cmd, check=True)
+        print(f"✅ Keyframes saved in: {keyframes_folder}")
     except subprocess.CalledProcessError as e:
-        print(f"Error extracting keyframes: {e}")
+        print(f"❌ Error extracting keyframes: {e}")
         return None
 
     return keyframes_folder
@@ -381,8 +383,22 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
     resized_top, resized_bottom = os.path.join(output_folder, "resized_top.mp4"), os.path.join(output_folder, "resized_bottom.mp4")
 
     def resize_video(input_file, output_file, width):
-        cmd = ["ffmpeg", "-y", "-i", input_file, "-vf", f"scale={width}:-2", "-c:v", "libx264", "-crf", "23", "-preset", "fast", "-c:a", "aac", "-b:a", "128k", output_file]
-        subprocess.run(cmd, check=True)
+        """Resize video while maintaining aspect ratio and optimizing encoding speed."""
+        cmd = [
+            "ffmpeg", "-y", "-i", input_file,
+            "-vf", f"scale={width}:-2",
+            "-c:v", "libx264", "-crf", "19", "-preset", "fast",
+            "-c:a", "aac", "-b:a", "128k",
+            "-threads", "4",  # Ensure threading is optimized
+            output_file  # Output file at the end
+        ]
+        
+        try:
+            print(f"🔹 Resizing {input_file} to width {width} with optimized settings...")
+            subprocess.run(cmd, check=True)
+            print(f"✅ Resized video saved as: {output_file}")
+        except subprocess.CalledProcessError as e:
+            print(f"❌ Error resizing video: {e}")
 
     resize_video(top_video, resized_top, target_width)
     resize_video(bottom_video, resized_bottom, target_width)
