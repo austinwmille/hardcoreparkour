@@ -266,7 +266,7 @@ def burn_subtitles(input_video, ass_file, output_video):
         "ffmpeg",
         "-y",  # Overwrite output if it exists.
         "-i", input_video,
-        "-vf", f"subtitles={ass_file}",
+        "-vf", f'subtitles="{ass_file}"',
         output_video
     ]
     print("Running FFmpeg command:")
