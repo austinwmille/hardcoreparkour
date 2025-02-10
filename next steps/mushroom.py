@@ -66,13 +66,14 @@ def generate_news_metadata(file_path):
         f"4. CATEGORY:\n"
         f"   - Set the category to 'News'.\n"
         f"---\n"
+        f"IMPORTANT: Return only a valid JSON object with no markdown formatting or additional text.\n"
         f"Filename: {original_file_name}\n"
         f"Transcript: {transcript}"
     )
 
     try:
         response = client.chat.completions.create(
-            model="o1-mini",  # Replace with your intended model (e.g., "gpt-4" or "gpt-3.5-turbo")
+            model="gpt-4o",  # Replace with your intended model (e.g., "gpt-4" or "gpt-3.5-turbo")
             messages=[
                 {
                     "role": "system", 
@@ -82,12 +83,21 @@ def generate_news_metadata(file_path):
             ]
         )
         metadata_content = response.choices[0].message.content.strip()
+
+        # Remove markdown formatting (triple backticks) if present:
+        import re
+        metadata_content = re.sub(r"^```(?:json)?", "", metadata_content)
+        metadata_content = re.sub(r"```$", "", metadata_content)
+        metadata_content = metadata_content.strip()
+
+        # Parse the cleaned string into JSON
         metadata = json.loads(metadata_content)
 
         # Force the category to be 'News'
         metadata['category'] = 'News'
         metadata['categoryId'] = '25'
         return metadata
+
     except json.JSONDecodeError:
         print("AI response not in JSON format. Using default metadata.")
         with open('description.txt', 'r', encoding='utf-8') as file:
