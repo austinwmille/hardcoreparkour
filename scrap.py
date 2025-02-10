@@ -53,7 +53,7 @@ def generate_ass_karaoke_subtitles(aligned_segments, ass_path, max_words=3, paus
         "Alignment,MarginL,MarginR,MarginV,Encoding\n"
         # Using Arial, size 36, primary colour = #6A0DAD (ASS BGR: &H00AD0D6A), no background,
         # Outline 1, Shadow 2, Alignment=2 (bottom-center) and MarginV=80 (raising the subs higher).
-        "Style: Default,Arial,36,&H00AD0D6A,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,1,2,2,10,10,160,1\n"
+        "Style: Default,Arial,36,&H00AD0D6A,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,1,2,2,10,10,300,1\n"
         "\n"
         "[Events]\n"
         "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n"
