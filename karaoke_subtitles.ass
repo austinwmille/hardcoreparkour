@@ -1,0 +1,178 @@
+[Script Info]
+Title: Karaoke Subtitles
+ScriptType: v4.00+
+Collisions: Normal
+PlayResX: 1280
+PlayResY: 720
+Timer: 100.0000
+
+[V4+ Styles]
+Format: Name,Fontname,Fontsize,PrimaryColour,SecondaryColour,OutlineColour,BackColour,Bold,Italic,Underline,StrikeOut,ScaleX,ScaleY,Spacing,Angle,BorderStyle,Outline,Shadow,Alignment,MarginL,MarginR,MarginV,Encoding
+Style: Default,Arial,36,&H00AD0D6A,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,1,2,2,10,10,160,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.51,0:00:01.07,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k14}to {\t(0,200,\fscx150,\fscy150)}{\k20}tell {\t(0,200,\fscx150,\fscy150)}{\k22}people
+Dialogue: 0,0:00:01.11,0:00:01.73,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k14}how {\t(0,200,\fscx150,\fscy150)}{\k40}amazing {\t(0,200,\fscx150,\fscy150)}{\k8}I
+Dialogue: 0,0:00:01.75,0:00:02.05,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k8}am. {\t(0,200,\fscx150,\fscy150)}{\k12}I've {\t(0,200,\fscx150,\fscy150)}{\k10}got
+Dialogue: 0,0:00:02.07,0:00:02.57,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k10}to {\t(0,200,\fscx150,\fscy150)}{\k10}be {\t(0,200,\fscx150,\fscy150)}{\k30}honest.
+Dialogue: 0,0:00:02.63,0:00:03.01,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k14}I've {\t(0,200,\fscx150,\fscy150)}{\k18}been {\t(0,200,\fscx150,\fscy150)}{\k6}in
+Dialogue: 0,0:00:03.05,0:00:03.41,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k10}a {\t(0,200,\fscx150,\fscy150)}{\k22}lot {\t(0,200,\fscx150,\fscy150)}{\k4}of
+Dialogue: 0,0:00:03.43,0:00:03.97,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k54}campaigns.
+Dialogue: 0,0:00:04.89,0:00:05.09,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k20}I've
+Dialogue: 0,0:00:05.81,0:00:06.55,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k40}never {\t(0,200,\fscx150,\fscy150)}{\k30}heard {\t(0,200,\fscx150,\fscy150)}{\k4}of
+Dialogue: 0,0:00:06.65,0:00:07.43,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k44}somebody {\t(0,200,\fscx150,\fscy150)}{\k28}wanting {\t(0,200,\fscx150,\fscy150)}{\k6}to
+Dialogue: 0,0:00:07.51,0:00:08.85,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k46}accept {\t(0,200,\fscx150,\fscy150)}{\k76}performing {\t(0,200,\fscx150,\fscy150)}{\k12}for
+Dialogue: 0,0:00:08.89,0:00:09.07,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k18}you.
+Dialogue: 0,0:00:09.43,0:00:10.05,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k32}That's {\t(0,200,\fscx150,\fscy150)}{\k12}one {\t(0,200,\fscx150,\fscy150)}{\k18}thing.
+Dialogue: 0,0:00:10.49,0:00:11.23,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k44}But {\t(0,200,\fscx150,\fscy150)}{\k16}to {\t(0,200,\fscx150,\fscy150)}{\k14}come
+Dialogue: 0,0:00:11.29,0:00:11.95,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k16}out {\t(0,200,\fscx150,\fscy150)}{\k10}and {\t(0,200,\fscx150,\fscy150)}{\k40}endorse
+Dialogue: 0,0:00:12.01,0:00:12.59,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k14}and {\t(0,200,\fscx150,\fscy150)}{\k32}speak, {\t(0,200,\fscx150,\fscy150)}{\k12}I've
+Dialogue: 0,0:00:12.65,0:00:13.11,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k22}never {\t(0,200,\fscx150,\fscy150)}{\k18}heard {\t(0,200,\fscx150,\fscy150)}{\k6}of
+Dialogue: 0,0:00:13.17,0:00:13.56,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k10}it. {\t(0,200,\fscx150,\fscy150)}{\k12}And {\t(0,200,\fscx150,\fscy150)}{\k16}so
+Dialogue: 0,0:00:13.58,0:00:14.59,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k20}we {\t(0,200,\fscx150,\fscy150)}{\k46}hosted {\t(0,200,\fscx150,\fscy150)}{\k36}President
+Dialogue: 0,0:00:14.64,0:00:15.76,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k36}Trump {\t(0,200,\fscx150,\fscy150)}{\k66}twice {\t(0,200,\fscx150,\fscy150)}{\k10}the
+Dialogue: 0,0:00:15.78,0:00:16.28,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k18}week {\t(0,200,\fscx150,\fscy150)}{\k24}before {\t(0,200,\fscx150,\fscy150)}{\k8}the
+Dialogue: 0,0:00:16.32,0:00:17.04,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k44}election, {\t(0,200,\fscx150,\fscy150)}{\k22}once {\t(0,200,\fscx150,\fscy150)}{\k6}in
+Dialogue: 0,0:00:17.30,0:00:18.12,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k34}Atlanta {\t(0,200,\fscx150,\fscy150)}{\k12}and {\t(0,200,\fscx150,\fscy150)}{\k36}Vegas.
+Dialogue: 0,0:00:18.52,0:00:18.80,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k10}And {\t(0,200,\fscx150,\fscy150)}{\k10}we {\t(0,200,\fscx150,\fscy150)}{\k8}had
+Dialogue: 0,0:00:18.84,0:00:19.54,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k18}the {\t(0,200,\fscx150,\fscy150)}{\k22}best {\t(0,200,\fscx150,\fscy150)}{\k30}speaker
+Dialogue: 0,0:00:19.56,0:00:20.04,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k26}lineup {\t(0,200,\fscx150,\fscy150)}{\k10}you {\t(0,200,\fscx150,\fscy150)}{\k12}could
+Dialogue: 0,0:00:20.06,0:00:20.50,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k30}imagine. {\t(0,200,\fscx150,\fscy150)}{\k10}Let {\t(0,200,\fscx150,\fscy150)}{\k4}me
+Dialogue: 0,0:00:20.52,0:00:20.94,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k14}name {\t(0,200,\fscx150,\fscy150)}{\k10}the {\t(0,200,\fscx150,\fscy150)}{\k18}names.
+Dialogue: 0,0:00:21.30,0:00:21.86,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k32}Jason {\t(0,200,\fscx150,\fscy150)}{\k24}Aldean.
+Dialogue: 0,0:00:23.13,0:00:23.97,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k24}who {\t(0,200,\fscx150,\fscy150)}{\k40}is {\t(0,200,\fscx150,\fscy150)}{\k20}number
+Dialogue: 0,0:00:24.03,0:00:24.51,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k14}one {\t(0,200,\fscx150,\fscy150)}{\k34}country,
+Dialogue: 0,0:00:24.87,0:00:25.03,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k16}right?
+Dialogue: 0,0:00:25.47,0:00:26.15,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k28}Tucker {\t(0,200,\fscx150,\fscy150)}{\k40}Carlson,
+Dialogue: 0,0:00:26.62,0:00:27.28,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k32}Bobby {\t(0,200,\fscx150,\fscy150)}{\k34}Kennedy.
+Dialogue: 0,0:00:27.66,0:00:28.06,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k8}I {\t(0,200,\fscx150,\fscy150)}{\k22}mean, {\t(0,200,\fscx150,\fscy150)}{\k10}we
+Dialogue: 0,0:00:28.10,0:00:28.60,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k14}had {\t(0,200,\fscx150,\fscy150)}{\k12}the {\t(0,200,\fscx150,\fscy150)}{\k24}biggest
+Dialogue: 0,0:00:28.64,0:00:29.08,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k16}names {\t(0,200,\fscx150,\fscy150)}{\k16}you {\t(0,200,\fscx150,\fscy150)}{\k12}can
+Dialogue: 0,0:00:29.10,0:00:29.64,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k22}imagine. {\t(0,200,\fscx150,\fscy150)}{\k26}Next {\t(0,200,\fscx150,\fscy150)}{\k6}one,
+Dialogue: 0,0:00:29.68,0:00:30.02,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k14}we {\t(0,200,\fscx150,\fscy150)}{\k20}had
+Dialogue: 0,0:00:31.60,0:00:32.04,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k44}Carano,
+Dialogue: 0,0:00:32.38,0:00:33.02,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k30}right? {\t(0,200,\fscx150,\fscy150)}{\k22}Who {\t(0,200,\fscx150,\fscy150)}{\k12}is
+Dialogue: 0,0:00:33.86,0:00:34.14,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k12}one {\t(0,200,\fscx150,\fscy150)}{\k6}of {\t(0,200,\fscx150,\fscy150)}{\k10}the...
+Dialogue: 0,0:00:34.24,0:00:35.25,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k24}Gina {\t(0,200,\fscx150,\fscy150)}{\k44}Carano. {\t(0,200,\fscx150,\fscy150)}{\k32}Gina
+Dialogue: 0,0:00:35.35,0:00:36.45,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k76}Carano, {\t(0,200,\fscx150,\fscy150)}{\k20}big {\t(0,200,\fscx150,\fscy150)}{\k14}name.
+Dialogue: 0,0:00:36.47,0:00:36.79,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k10}Of {\t(0,200,\fscx150,\fscy150)}{\k22}course.
+Dialogue: 0,0:00:37.29,0:00:37.81,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k22}We {\t(0,200,\fscx150,\fscy150)}{\k30}had
+Dialogue: 0,0:00:38.19,0:00:39.17,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k20}Tucker {\t(0,200,\fscx150,\fscy150)}{\k60}Viola, {\t(0,200,\fscx150,\fscy150)}{\k18}right?
+Dialogue: 0,0:00:39.21,0:00:39.59,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k10}We {\t(0,200,\fscx150,\fscy150)}{\k14}had {\t(0,200,\fscx150,\fscy150)}{\k14}like
+Dialogue: 0,0:00:39.81,0:00:40.65,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k36}really {\t(0,200,\fscx150,\fscy150)}{\k22}big {\t(0,200,\fscx150,\fscy150)}{\k26}names.
+Dialogue: 0,0:00:41.25,0:00:41.65,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k8}We {\t(0,200,\fscx150,\fscy150)}{\k18}didn't {\t(0,200,\fscx150,\fscy150)}{\k14}pay
+Dialogue: 0,0:00:41.69,0:00:42.27,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k8}a {\t(0,200,\fscx150,\fscy150)}{\k24}single {\t(0,200,\fscx150,\fscy150)}{\k26}person.
+Dialogue: 0,0:00:43.13,0:00:43.53,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k14}Not {\t(0,200,\fscx150,\fscy150)}{\k8}a {\t(0,200,\fscx150,\fscy150)}{\k18}single
+Dialogue: 0,0:00:43.57,0:00:43.82,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k24}person.
+Dialogue: 0,0:00:44.38,0:00:44.88,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k12}And {\t(0,200,\fscx150,\fscy150)}{\k18}so {\t(0,200,\fscx150,\fscy150)}{\k20}I
+Dialogue: 0,0:00:44.90,0:00:45.38,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k12}don't {\t(0,200,\fscx150,\fscy150)}{\k20}know {\t(0,200,\fscx150,\fscy150)}{\k16}what
+Dialogue: 0,0:00:45.44,0:00:46.04,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k22}world {\t(0,200,\fscx150,\fscy150)}{\k18}they're {\t(0,200,\fscx150,\fscy150)}{\k20}living
+Dialogue: 0,0:00:46.12,0:00:46.98,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k16}in. {\t(0,200,\fscx150,\fscy150)}{\k26}You {\t(0,200,\fscx150,\fscy150)}{\k44}know
+Dialogue: 0,0:00:47.00,0:00:47.06,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k6}why?
+Dialogue: 0,0:00:47.48,0:00:47.58,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k10}And
+Dialogue: 0,0:00:48.06,0:00:49.10,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k62}look, {\t(0,200,\fscx150,\fscy150)}{\k32}Tucker, {\t(0,200,\fscx150,\fscy150)}{\k10}all
+Dialogue: 0,0:00:49.14,0:00:49.58,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k14}these {\t(0,200,\fscx150,\fscy150)}{\k20}guys, {\t(0,200,\fscx150,\fscy150)}{\k10}they
+Dialogue: 0,0:00:49.60,0:00:50.18,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k20}could {\t(0,200,\fscx150,\fscy150)}{\k32}demand {\t(0,200,\fscx150,\fscy150)}{\k6}a
+Dialogue: 0,0:00:50.38,0:00:51.06,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k42}huge {\t(0,200,\fscx150,\fscy150)}{\k26}fee.
+Dialogue: 0,0:00:51.36,0:00:51.64,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k10}You {\t(0,200,\fscx150,\fscy150)}{\k10}know, {\t(0,200,\fscx150,\fscy150)}{\k8}they
+Dialogue: 0,0:00:51.66,0:00:52.08,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k18}said, {\t(0,200,\fscx150,\fscy150)}{\k14}I'm {\t(0,200,\fscx150,\fscy150)}{\k10}going
+Dialogue: 0,0:00:52.10,0:00:52.36,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k12}there {\t(0,200,\fscx150,\fscy150)}{\k8}for {\t(0,200,\fscx150,\fscy150)}{\k6}the
+Dialogue: 0,0:00:52.40,0:00:52.72,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k32}country.
+Dialogue: 0,0:00:53.17,0:00:53.42,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k12}They {\t(0,200,\fscx150,\fscy150)}{\k12}said, {\t(0,200,\fscx150,\fscy150)}{\k2}I
+Dialogue: 0,0:00:53.46,0:00:54.13,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k28}wouldn't {\t(0,200,\fscx150,\fscy150)}{\k28}charge {\t(0,200,\fscx150,\fscy150)}{\k10}you
+Dialogue: 0,0:00:54.17,0:00:54.49,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k12}for {\t(0,200,\fscx150,\fscy150)}{\k20}this.
+Dialogue: 0,0:00:55.21,0:00:55.63,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k18}We're {\t(0,200,\fscx150,\fscy150)}{\k14}going {\t(0,200,\fscx150,\fscy150)}{\k10}there
+Dialogue: 0,0:00:55.65,0:00:56.07,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k6}to {\t(0,200,\fscx150,\fscy150)}{\k12}get {\t(0,200,\fscx150,\fscy150)}{\k24}Donald
+Dialogue: 0,0:00:56.09,0:00:56.55,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k18}Trump {\t(0,200,\fscx150,\fscy150)}{\k28}elected.
+Dialogue: 0,0:00:56.87,0:00:57.63,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k8}I {\t(0,200,\fscx150,\fscy150)}{\k38}have {\t(0,200,\fscx150,\fscy150)}{\k30}never
+Dialogue: 0,0:00:57.71,0:00:57.95,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k24}heard.
+Dialogue: 0,0:00:58.49,0:00:59.23,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k16}of {\t(0,200,\fscx150,\fscy150)}{\k12}a {\t(0,200,\fscx150,\fscy150)}{\k46}campaign
+Dialogue: 0,0:00:59.27,0:00:59.73,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k10}or {\t(0,200,\fscx150,\fscy150)}{\k10}a {\t(0,200,\fscx150,\fscy150)}{\k26}super
+Dialogue: 0,0:00:59.77,0:01:00.03,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k26}PAC
+Dialogue: 0,0:01:00.35,0:01:00.91,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k24}this {\t(0,200,\fscx150,\fscy150)}{\k24}close {\t(0,200,\fscx150,\fscy150)}{\k8}to
+Dialogue: 0,0:01:00.93,0:01:01.61,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k10}an {\t(0,200,\fscx150,\fscy150)}{\k52}election, {\t(0,200,\fscx150,\fscy150)}{\k6}you
+Dialogue: 0,0:01:01.63,0:01:01.87,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k10}know {\t(0,200,\fscx150,\fscy150)}{\k10}what {\t(0,200,\fscx150,\fscy150)}{\k4}it
+Dialogue: 0,0:01:01.89,0:01:02.45,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k16}means? {\t(0,200,\fscx150,\fscy150)}{\k24}It {\t(0,200,\fscx150,\fscy150)}{\k16}means
+Dialogue: 0,0:01:02.47,0:01:02.99,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k12}they {\t(0,200,\fscx150,\fscy150)}{\k14}don't {\t(0,200,\fscx150,\fscy150)}{\k26}believe
+Dialogue: 0,0:01:03.03,0:01:03.61,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k6}it. {\t(0,200,\fscx150,\fscy150)}{\k32}It {\t(0,200,\fscx150,\fscy150)}{\k20}means
+Dialogue: 0,0:01:03.63,0:01:04.41,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k16}that {\t(0,200,\fscx150,\fscy150)}{\k20}these {\t(0,200,\fscx150,\fscy150)}{\k42}celebs
+Dialogue: 0,0:01:04.47,0:01:04.99,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k14}are {\t(0,200,\fscx150,\fscy150)}{\k16}not {\t(0,200,\fscx150,\fscy150)}{\k22}bought
+Dialogue: 0,0:01:05.07,0:01:05.45,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k14}in {\t(0,200,\fscx150,\fscy150)}{\k8}and {\t(0,200,\fscx150,\fscy150)}{\k16}they're
+Dialogue: 0,0:01:05.47,0:01:05.97,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k16}just {\t(0,200,\fscx150,\fscy150)}{\k26}looking {\t(0,200,\fscx150,\fscy150)}{\k8}at
+Dialogue: 0,0:01:05.99,0:01:06.29,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k12}it {\t(0,200,\fscx150,\fscy150)}{\k14}as {\t(0,200,\fscx150,\fscy150)}{\k4}a
+Dialogue: 0,0:01:06.33,0:01:07.37,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k72}payday. {\t(0,200,\fscx150,\fscy150)}{\k14}Of {\t(0,200,\fscx150,\fscy150)}{\k18}course.
+Dialogue: 0,0:01:07.39,0:01:07.81,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k6}Of {\t(0,200,\fscx150,\fscy150)}{\k26}course. {\t(0,200,\fscx150,\fscy150)}{\k10}And
+Dialogue: 0,0:01:07.83,0:01:08.37,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k24}Oprah {\t(0,200,\fscx150,\fscy150)}{\k20}too {\t(0,200,\fscx150,\fscy150)}{\k10}took
+Dialogue: 0,0:01:08.43,0:01:09.05,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k6}a {\t(0,200,\fscx150,\fscy150)}{\k36}million {\t(0,200,\fscx150,\fscy150)}{\k20}bucks
+Dialogue: 0,0:01:09.07,0:01:09.35,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k8}and {\t(0,200,\fscx150,\fscy150)}{\k10}lied {\t(0,200,\fscx150,\fscy150)}{\k10}about
+Dialogue: 0,0:01:09.37,0:01:09.55,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k6}it. {\t(0,200,\fscx150,\fscy150)}{\k8}Let {\t(0,200,\fscx150,\fscy150)}{\k4}me
+Dialogue: 0,0:01:09.57,0:01:09.75,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k8}ask {\t(0,200,\fscx150,\fscy150)}{\k8}you {\t(0,200,\fscx150,\fscy150)}{\k2}a
+Dialogue: 0,0:01:09.77,0:01:10.09,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k18}question. {\t(0,200,\fscx150,\fscy150)}{\k8}By {\t(0,200,\fscx150,\fscy150)}{\k6}the
+Dialogue: 0,0:01:10.11,0:01:10.61,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k10}way, {\t(0,200,\fscx150,\fscy150)}{\k18}Oprah's {\t(0,200,\fscx150,\fscy150)}{\k22}probably
+Dialogue: 0,0:01:10.63,0:01:11.05,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k16}sitting {\t(0,200,\fscx150,\fscy150)}{\k14}around {\t(0,200,\fscx150,\fscy150)}{\k12}saying,
+Dialogue: 0,0:01:11.09,0:01:11.33,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k4}I {\t(0,200,\fscx150,\fscy150)}{\k12}could {\t(0,200,\fscx150,\fscy150)}{\k8}have
+Dialogue: 0,0:01:11.35,0:01:12.04,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k26}collected {\t(0,200,\fscx150,\fscy150)}{\k28}another {\t(0,200,\fscx150,\fscy150)}{\k14}nine
+Dialogue: 0,0:01:12.07,0:01:12.64,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k26}million {\t(0,200,\fscx150,\fscy150)}{\k30}dollars.
+Dialogue: 0,0:01:13.04,0:01:13.95,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k38}Oprah's {\t(0,200,\fscx150,\fscy150)}{\k32}pissed {\t(0,200,\fscx150,\fscy150)}{\k22}saying,
+Dialogue: 0,0:01:14.00,0:01:14.59,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k34}hey, {\t(0,200,\fscx150,\fscy150)}{\k14}you {\t(0,200,\fscx150,\fscy150)}{\k12}didn't
+Dialogue: 0,0:01:14.64,0:01:15.06,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k14}pay {\t(0,200,\fscx150,\fscy150)}{\k12}me {\t(0,200,\fscx150,\fscy150)}{\k16}nine
+Dialogue: 0,0:01:15.10,0:01:15.46,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k16}more. {\t(0,200,\fscx150,\fscy150)}{\k12}I {\t(0,200,\fscx150,\fscy150)}{\k8}got
+Dialogue: 0,0:01:15.48,0:01:15.76,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k6}to {\t(0,200,\fscx150,\fscy150)}{\k12}go {\t(0,200,\fscx150,\fscy150)}{\k10}back
+Dialogue: 0,0:01:15.78,0:01:15.98,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k8}and {\t(0,200,\fscx150,\fscy150)}{\k8}try {\t(0,200,\fscx150,\fscy150)}{\k4}to
+Dialogue: 0,0:01:16.00,0:01:16.36,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k16}collect {\t(0,200,\fscx150,\fscy150)}{\k10}that {\t(0,200,\fscx150,\fscy150)}{\k10}money.
+Dialogue: 0,0:01:16.38,0:01:16.58,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k8}But {\t(0,200,\fscx150,\fscy150)}{\k4}I {\t(0,200,\fscx150,\fscy150)}{\k8}mean,
+Dialogue: 0,0:01:16.60,0:01:16.78,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k8}for {\t(0,200,\fscx150,\fscy150)}{\k8}her {\t(0,200,\fscx150,\fscy150)}{\k2}a
+Dialogue: 0,0:01:16.80,0:01:17.30,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k24}million {\t(0,200,\fscx150,\fscy150)}{\k18}bucks, {\t(0,200,\fscx150,\fscy150)}{\k8}why
+Dialogue: 0,0:01:17.34,0:01:17.88,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k20}even {\t(0,200,\fscx150,\fscy150)}{\k26}charge {\t(0,200,\fscx150,\fscy150)}{\k8}it?
+Dialogue: 0,0:01:18.10,0:01:19.56,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k84}But {\t(0,200,\fscx150,\fscy150)}{\k30}there's {\t(0,200,\fscx150,\fscy150)}{\k32}different
+Dialogue: 0,0:01:19.58,0:01:20.16,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k30}things. {\t(0,200,\fscx150,\fscy150)}{\k20}This {\t(0,200,\fscx150,\fscy150)}{\k8}is
+Dialogue: 0,0:01:20.18,0:01:20.62,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k20}kind {\t(0,200,\fscx150,\fscy150)}{\k8}of {\t(0,200,\fscx150,\fscy150)}{\k16}like,
+Dialogue: 0,0:01:20.64,0:01:21.02,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k10}you {\t(0,200,\fscx150,\fscy150)}{\k14}know, {\t(0,200,\fscx150,\fscy150)}{\k14}when
+Dialogue: 0,0:01:21.04,0:01:21.82,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k16}the {\t(0,200,\fscx150,\fscy150)}{\k40}lawyer {\t(0,200,\fscx150,\fscy150)}{\k22}does
+Dialogue: 0,0:01:22.30,0:01:22.40,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k10}a,
+Dialogue: 0,0:01:23.84,0:01:24.44,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k34}when {\t(0,200,\fscx150,\fscy150)}{\k22}once {\t(0,200,\fscx150,\fscy150)}{\k4}a
+Dialogue: 0,0:01:24.48,0:01:25.36,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k18}year {\t(0,200,\fscx150,\fscy150)}{\k26}you're {\t(0,200,\fscx150,\fscy150)}{\k44}representing
+Dialogue: 0,0:01:25.40,0:01:26.12,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k46}somebody {\t(0,200,\fscx150,\fscy150)}{\k14}that {\t(0,200,\fscx150,\fscy150)}{\k12}you're
+Dialogue: 0,0:01:26.14,0:01:26.60,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k14}not {\t(0,200,\fscx150,\fscy150)}{\k26}taking {\t(0,200,\fscx150,\fscy150)}{\k6}any
+Dialogue: 0,0:01:26.70,0:01:27.28,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k28}money {\t(0,200,\fscx150,\fscy150)}{\k16}from. {\t(0,200,\fscx150,\fscy150)}{\k14}Pro
+Dialogue: 0,0:01:27.30,0:01:27.52,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k22}bono.
+Dialogue: 0,0:01:28.81,0:01:29.19,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k22}This {\t(0,200,\fscx150,\fscy150)}{\k12}is {\t(0,200,\fscx150,\fscy150)}{\k4}a
+Dialogue: 0,0:01:29.27,0:01:30.01,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k46}cause, {\t(0,200,\fscx150,\fscy150)}{\k20}this {\t(0,200,\fscx150,\fscy150)}{\k8}is
+Dialogue: 0,0:01:30.05,0:01:30.81,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k6}a {\t(0,200,\fscx150,\fscy150)}{\k54}crusade. {\t(0,200,\fscx150,\fscy150)}{\k16}You
+Dialogue: 0,0:01:30.85,0:01:31.33,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k16}put {\t(0,200,\fscx150,\fscy150)}{\k10}an {\t(0,200,\fscx150,\fscy150)}{\k22}event
+Dialogue: 0,0:01:31.39,0:01:32.21,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k42}together, {\t(0,200,\fscx150,\fscy150)}{\k30}Tucker's {\t(0,200,\fscx150,\fscy150)}{\k10}going
+Dialogue: 0,0:01:32.23,0:01:32.61,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k10}to {\t(0,200,\fscx150,\fscy150)}{\k16}tell {\t(0,200,\fscx150,\fscy150)}{\k12}you,
+Dialogue: 0,0:01:32.63,0:01:33.01,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k14}pay {\t(0,200,\fscx150,\fscy150)}{\k10}me {\t(0,200,\fscx150,\fscy150)}{\k14}my
+Dialogue: 0,0:01:33.53,0:01:34.09,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k26}whatever {\t(0,200,\fscx150,\fscy150)}{\k14}the {\t(0,200,\fscx150,\fscy150)}{\k16}rate
+Dialogue: 0,0:01:34.12,0:01:34.52,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k12}is, {\t(0,200,\fscx150,\fscy150)}{\k20}because {\t(0,200,\fscx150,\fscy150)}{\k8}it's
+Dialogue: 0,0:01:34.56,0:01:34.92,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k8}an {\t(0,200,\fscx150,\fscy150)}{\k28}event.
+Dialogue: 0,0:01:35.44,0:01:35.92,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k16}But {\t(0,200,\fscx150,\fscy150)}{\k16}if {\t(0,200,\fscx150,\fscy150)}{\k16}this
+Dialogue: 0,0:01:36.00,0:01:36.98,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k14}is {\t(0,200,\fscx150,\fscy150)}{\k18}a {\t(0,200,\fscx150,\fscy150)}{\k66}campaign
+Dialogue: 0,0:01:37.12,0:01:37.72,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k14}that {\t(0,200,\fscx150,\fscy150)}{\k24}you're {\t(0,200,\fscx150,\fscy150)}{\k22}going
+Dialogue: 0,0:01:37.76,0:01:38.66,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k10}out {\t(0,200,\fscx150,\fscy150)}{\k18}to {\t(0,200,\fscx150,\fscy150)}{\k62}help,
+Dialogue: 0,0:01:38.74,0:01:39.34,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k18}it's {\t(0,200,\fscx150,\fscy150)}{\k12}a {\t(0,200,\fscx150,\fscy150)}{\k30}different
+Dialogue: 0,0:01:39.38,0:01:39.96,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k34}story. {\t(0,200,\fscx150,\fscy150)}{\k16}By {\t(0,200,\fscx150,\fscy150)}{\k8}the
+Dialogue: 0,0:01:40.00,0:01:40.48,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k26}way, {\t(0,200,\fscx150,\fscy150)}{\k20}here's {\t(0,200,\fscx150,\fscy150)}{\k2}a
+Dialogue: 0,0:01:40.52,0:01:41.09,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k32}question {\t(0,200,\fscx150,\fscy150)}{\k16}for {\t(0,200,\fscx150,\fscy150)}{\k8}you.
+Dialogue: 0,0:01:41.91,0:01:42.39,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k14}Do {\t(0,200,\fscx150,\fscy150)}{\k14}you {\t(0,200,\fscx150,\fscy150)}{\k20}think
+Dialogue: 0,0:01:42.51,0:01:43.45,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k44}Obama {\t(0,200,\fscx150,\fscy150)}{\k22}paid {\t(0,200,\fscx150,\fscy150)}{\k28}Oprah?
+Dialogue: 0,0:01:43.85,0:01:44.13,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k28}No.
+Dialogue: 0,0:01:44.51,0:01:44.93,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k18}No {\t(0,200,\fscx150,\fscy150)}{\k12}way. {\t(0,200,\fscx150,\fscy150)}{\k12}She
+Dialogue: 0,0:01:44.97,0:01:45.35,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k28}believed {\t(0,200,\fscx150,\fscy150)}{\k10}it.
+Dialogue: 0,0:01:45.71,0:01:46.51,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k26}She {\t(0,200,\fscx150,\fscy150)}{\k46}believed {\t(0,200,\fscx150,\fscy150)}{\k8}it.
+Dialogue: 0,0:01:46.53,0:01:47.11,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k30}We {\t(0,200,\fscx150,\fscy150)}{\k28}would
+Dialogue: 0,0:01:47.51,0:01:48.09,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k28}have {\t(0,200,\fscx150,\fscy150)}{\k22}known. {\t(0,200,\fscx150,\fscy150)}{\k8}You
+Dialogue: 0,0:01:48.11,0:01:48.78,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k16}would {\t(0,200,\fscx150,\fscy150)}{\k18}have {\t(0,200,\fscx150,\fscy150)}{\k32}felt
+Dialogue: 0,0:01:48.84,0:01:49.28,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k12}it. {\t(0,200,\fscx150,\fscy150)}{\k12}The {\t(0,200,\fscx150,\fscy150)}{\k20}part
+Dialogue: 0,0:01:49.32,0:01:49.76,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k16}is, {\t(0,200,\fscx150,\fscy150)}{\k16}you {\t(0,200,\fscx150,\fscy150)}{\k12}would
+Dialogue: 0,0:01:49.80,0:01:50.32,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k18}have {\t(0,200,\fscx150,\fscy150)}{\k28}felt {\t(0,200,\fscx150,\fscy150)}{\k6}it.
+Dialogue: 0,0:01:50.34,0:01:50.64,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k12}There {\t(0,200,\fscx150,\fscy150)}{\k14}was {\t(0,200,\fscx150,\fscy150)}{\k4}a
+Dialogue: 0,0:01:50.74,0:01:51.50,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k28}big {\t(0,200,\fscx150,\fscy150)}{\k36}difference. {\t(0,200,\fscx150,\fscy150)}{\k12}She
+Dialogue: 0,0:01:51.54,0:01:52.30,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k34}really {\t(0,200,\fscx150,\fscy150)}{\k34}believed {\t(0,200,\fscx150,\fscy150)}{\k8}it.
+Dialogue: 0,0:01:52.42,0:01:53.40,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k34}She {\t(0,200,\fscx150,\fscy150)}{\k42}really {\t(0,200,\fscx150,\fscy150)}{\k22}believed
+Dialogue: 0,0:01:53.42,0:01:53.62,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k6}it. {\t(0,200,\fscx150,\fscy150)}{\k8}And {\t(0,200,\fscx150,\fscy150)}{\k6}it
+Dialogue: 0,0:01:53.66,0:01:54.24,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k18}was {\t(0,200,\fscx150,\fscy150)}{\k28}early {\t(0,200,\fscx150,\fscy150)}{\k12}too.
+Dialogue: 0,0:01:54.26,0:01:54.50,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k10}She {\t(0,200,\fscx150,\fscy150)}{\k10}did {\t(0,200,\fscx150,\fscy150)}{\k4}it
+Dialogue: 0,0:01:54.54,0:01:55.14,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k8}in {\t(0,200,\fscx150,\fscy150)}{\k10}the {\t(0,200,\fscx150,\fscy150)}{\k42}primary,
+Dialogue: 0,0:01:55.18,0:01:55.56,Default,,0,0,0,,{\t(0,200,\fscx150,\fscy150)}{\k6}if {\t(0,200,\fscx150,\fscy150)}{\k8}you {\t(0,200,\fscx150,\fscy150)}{\k24}remember.
