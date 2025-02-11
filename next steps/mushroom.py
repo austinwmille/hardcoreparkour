@@ -14,7 +14,7 @@ from openai import OpenAI
 
 # ---------------------------------------------------------------- #
 # our folder path
-VIDEO_FOLDER_PATH = "../random clips"
+VIDEO_FOLDER_PATH = "../random clips/"
 
 load_dotenv('mushroom.env')
 
@@ -262,15 +262,17 @@ def generate_ass_karaoke_subtitles(aligned_segments, ass_path, max_words=3, paus
     print(f"ASS karaoke subtitle file generated: {ass_path}")
 
 def burn_subtitles(input_video, ass_file, output_video):
+    # Build the FFmpeg command.
     command = [
         "ffmpeg",
-        "-y",  # Overwrite output if it exists.
+        "-y",                      # Overwrite output if it exists.
         "-i", input_video,
-        "-vf", f'subtitles="{ass_file}"',
+        "-vf", f"subtitles={ass_file}",
         output_video
     ]
     print("Running FFmpeg command:")
     print(" ".join(command))
+    
     subprocess.run(command, check=True)
     print(f"Subtitled video created: {output_video}")
 
