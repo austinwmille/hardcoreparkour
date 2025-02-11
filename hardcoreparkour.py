@@ -10,7 +10,7 @@ import datetime
 MOVIE_FOLDER = "C:/Users/austi/Desktop/ctr+X/processmesempai"
 PARKOUR_FOLDER = "C:/Users/austi/Desktop/ctr+X/extrascripts/stock vids/minecraft parkour"
 OUTPUT_FOLDER = "C:/Users/austi/Desktop/hardcoreparkour/random clips"
-CLIP_DURATION = 600  # 10 minutes in seconds
+CLIP_DURATION = 525  # 10 minutes in seconds
 
 def find_video_files(folder):
     """Return a list of video files in the given folder"""
