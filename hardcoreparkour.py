@@ -192,7 +192,7 @@ def crop_video_based_on_faces(input_video, output_folder):
     cmd = [
         "ffmpeg", "-y", "-i", input_video,
         "-vf", f"crop={crop_w}:{crop_h}:{crop_x}:{crop_y}",
-        "-c:v", "libx264", "-preset", "fast", "-crf", "23", "-c:a", "copy",
+        "-c:v", "libx264", "-preset", "medium", "-crf", "19", "-c:a", "aac",
         output_cropped
     ]
 
@@ -365,7 +365,7 @@ def ffmpeg_extract(input_file, start_time, output_file, clip_duration=600):
             "-ss", str(start_time),
             "-i", input_file,
             "-t", str(clip_duration),
-            "-c:v", "libx264", "-crf", "19", "-preset", "fast",
+            "-c:v", "libx264", "-crf", "19", "-preset", "medium",
             "-c:a", "aac", "-b:a", "128k",
             "-threads", "4",
             output_file
@@ -445,9 +445,9 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
                 cmd = [
                     "ffmpeg", "-y", "-i", input_file,
                     "-vf", f"scale={width}:-2",
-                    "-c:v", "libx264", "-preset", "ultrafast", "-crf", "19",
+                    "-c:v", "libx264", "-preset", "medium", "-crf", "19",
                     "-c:a", "aac", "-b:a", "128k",
-                    "-threads", "8",  # Use more threads if available
+                    "-threads", "4",  # Use more threads if available
                     output_file
                 ]
 
@@ -467,8 +467,8 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
         '-map', '0:a?',
         '-map', '1:a?',
         '-c:v', 'libx264',
-        '-preset', 'ultrafast',
-        '-crf', '28',
+        '-preset', 'medium',
+        '-crf', '19',
         '-c:a', 'aac',
         '-b:a', '128k',
         '-shortest',
