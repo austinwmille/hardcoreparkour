@@ -10,7 +10,7 @@ import datetime
 MOVIE_FOLDER = "C:/Users/austi/Desktop/ctr+X/processmesempai"
 PARKOUR_FOLDER = "C:/Users/austi/Desktop/ctr+X/extrascripts/stock vids/minecraft parkour"
 OUTPUT_FOLDER = "C:/Users/austi/Desktop/hardcoreparkour/random clips"
-CLIP_DURATION = 525  # 10 minutes in seconds
+CLIP_DURATION = 45  # 10 minutes == 600 seconds
 
 def find_video_files(folder):
     """Return a list of video files in the given folder"""
@@ -65,14 +65,14 @@ def extract_keyframes(trimmed_video, output_folder):
 
     cmd = [
         'ffmpeg', '-y',
-        '-i', trimmed_video,  # ⬅️ Now using the trimmed 10-minute clip!
-        '-vf', "select='eq(pict_type\\,I)',scale=1280:720",
+        '-i', trimmed_video,  # Now using the trimmed 10-minute clip!
+        '-vf', "select='eq(pict_type\\,I)',scale=1920:1080:flags=lanczos",
         '-vsync', 'vfr',
         os.path.join(keyframes_folder, "frame_%04d.jpg")
     ]
 
     try:
-        print(f"🔹 Extracting keyframes from final 10-minute clip: {trimmed_video}...")
+        print(f"Extracting keyframes from clip: {trimmed_video}...")
         subprocess.run(cmd, check=True)
         print(f"✅ Keyframes saved in: {keyframes_folder}")
     except subprocess.CalledProcessError as e:
@@ -80,9 +80,6 @@ def extract_keyframes(trimmed_video, output_folder):
         return None
 
     return keyframes_folder
-
-import cv2
-import numpy as np
 
 def calculate_sharpness(image):
     """Measure image sharpness using the Laplacian variance."""
@@ -134,78 +131,8 @@ def choose_best_thumbnail(keyframes_folder):
         print("⚠️ No ideal face found, using brightest frame instead.")
         return None  # Fallback to brightness logic if needed
 
-# detect_faces_in_video is deprecated for now
-def detect_faces_in_video(video_path):
-    """Detect faces in a sample of frames from a video to determine the best crop area."""
-    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
-    cap = cv2.VideoCapture(video_path)
-
-    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    sample_frames = [int(frame_count * r) for r in [0.2, 0.4, 0.6, 0.8]]  # Sample 4 points in video
-
-    detected_faces = []
-
-    for frame_pos in sample_frames:
-        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_pos)  # Move to frame position
-        ret, frame = cap.read()
-
-        if not ret:
-            continue
-
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(50, 50))
-
-        for (x, y, w, h) in faces:
-            detected_faces.append((x, y, w, h))
-
-    cap.release()
-
-    if not detected_faces:
-        return None  # No faces detected
-
-    # Calculate average face position
-    avg_x = int(sum([f[0] for f in detected_faces]) / len(detected_faces))
-    avg_y = int(sum([f[1] for f in detected_faces]) / len(detected_faces))
-    avg_w = int(sum([f[2] for f in detected_faces]) / len(detected_faces))
-    avg_h = int(sum([f[3] for f in detected_faces]) / len(detected_faces))
-
-    return avg_x, avg_y, avg_w, avg_h
-
-# crop_video_based_on_faces is deprecated for now
-def crop_video_based_on_faces(input_video, output_folder):
-    """Crop the video to center around detected faces."""
-    face_coords = detect_faces_in_video(input_video)
-
-    if not face_coords:
-        print("No faces detected, using default center crop.")
-        crop_x = "(in_w-1080)/2"
-        crop_y = "(in_h-1920)/2"
-    else:
-        x, y, w, h = face_coords
-        crop_x = max(x - 100, 0)  # Offset left
-        crop_y = max(y - 200, 0)  # Offset top
-        crop_w = min(w + 200, 1080)  # Expand width
-        crop_h = min(h + 300, 1920)  # Expand height
-
-    output_cropped = os.path.join(output_folder, os.path.basename(input_video).replace(".mp4", "_cropped.mp4"))
-
-    cmd = [
-        "ffmpeg", "-y", "-i", input_video,
-        "-vf", f"crop={crop_w}:{crop_h}:{crop_x}:{crop_y}",
-        "-c:v", "libx264", "-preset", "medium", "-crf", "19", "-c:a", "aac",
-        output_cropped
-    ]
-
-    try:
-        subprocess.run(cmd, check=True)
-        print(f"Cropped video saved: {output_cropped}")
-    except subprocess.CalledProcessError as e:
-        print(f"Error cropping video: {e}")
-        return None
-
-    return output_cropped
-
 import shutil  # Imported some things mid script to see where i used them
+
 def get_image_dimensions(image_path):
     """Get the width and height of an image using FFmpeg."""
     cmd = [
@@ -220,8 +147,6 @@ def get_image_dimensions(image_path):
     except Exception as e:
         print(f"Error getting image dimensions: {e}")
         return None, None
-
-import shutil  # Make sure shutil is imported
 
 def generate_thumbnail(movie_file, output_folder):
     """Extracts keyframes, selects the best one as a thumbnail, applies vignette + border, and cleans up."""
@@ -366,7 +291,7 @@ def ffmpeg_extract(input_file, start_time, output_file, clip_duration=600):
             "-i", input_file,
             "-t", str(clip_duration),
             "-c:v", "libx264", "-crf", "19", "-preset", "medium",
-            "-c:a", "aac", "-b:a", "128k",
+            "-c:a", "aac", "-b:a", "160k",
             "-threads", "4",
             output_file
         ]
@@ -437,7 +362,7 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
                     "ffmpeg", "-y", "-hwaccel", "cuda", "-i", input_file,
                     "-vf", f"scale={width}:-2",
                     "-c:v", "h264_nvenc", "-preset", "fast", "-b:v", "5M",
-                    "-c:a", "aac", "-b:a", "128k",
+                    "-c:a", "aac", "-b:a", "160k",
                     output_file
                 ]
             else:
@@ -446,7 +371,7 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
                     "ffmpeg", "-y", "-i", input_file,
                     "-vf", f"scale={width}:-2",
                     "-c:v", "libx264", "-preset", "medium", "-crf", "19",
-                    "-c:a", "aac", "-b:a", "128k",
+                    "-c:a", "aac", "-b:a", "160k",
                     "-threads", "4",  # Use more threads if available
                     output_file
                 ]
@@ -467,10 +392,10 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
         '-map', '0:a?',
         '-map', '1:a?',
         '-c:v', 'libx264',
-        '-preset', 'medium',
+        '-preset', 'slow',
         '-crf', '19',
         '-c:a', 'aac',
-        '-b:a', '128k',
+        '-b:a', '160k',
         '-shortest',
         output_file
     ]

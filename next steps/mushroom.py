@@ -55,14 +55,14 @@ def generate_news_metadata(file_path):
     original_file_name = os.path.splitext(os.path.basename(file_path))[0]
 
     prompt = (
-        f"Generate YouTube metadata as JSON (title, description, tags, category) for a provocative right-wing news clip. RULES:\n"
+        f"Generate YouTube metadata as JSON (title, description, tags, category) for a provocative right-wing news clip (usually). RULES:\n"
         f"1. TITLE:\n"
         f"   - Reword the original title (derived from the filename) in a straightforward and neutral manner. Only include hook words if they clearly add value.\n"
         f"2. DESCRIPTION:\n"
         f"   - Provide a simple, clear description that is not too dramatic.\n"
-        f"   - Do not include generic calls to action except an optional brief note like 'Subscribe for more digestible clips every week!'.\n"
+        f"   - Do not include generic calls to action except an optional brief note such as (or similar to) 'Subscribe for more digestible clips every week!'.\n"
         f"3. TAGS:\n"
-        f"   - Include relevant tags that reflect interviews, debates, and news content without overusing trendy terms.\n"
+        f"   - Include relevant tags that reflect interviews, debates, and news content without overusing trendy terms (unless the video has no debates/interviews/talking/panels/etc).\n"
         f"4. CATEGORY:\n"
         f"   - Set the category to 'News'.\n"
         f"---\n"
@@ -262,12 +262,16 @@ def generate_ass_karaoke_subtitles(aligned_segments, ass_path, max_words=3, paus
     print(f"ASS karaoke subtitle file generated: {ass_path}")
 
 def burn_subtitles(input_video, ass_file, output_video):
-    # Build the FFmpeg command.
+    # Build the FFmpeg command with quality settings for video encoding.
     command = [
         "ffmpeg",
         "-y",                      # Overwrite output if it exists.
         "-i", input_video,
         "-vf", f"subtitles={ass_file}",
+        "-c:v", "libx264",         # Use H.264 encoder.
+        "-preset", "medium",       # Encoding preset.
+        "-crf", "19",              # Quality control (lower = higher quality).
+        "-c:a", "copy",            # Optionally, copy the audio stream if re-encoding is not required.
         output_video
     ]
     print("Running FFmpeg command:")
@@ -275,7 +279,7 @@ def burn_subtitles(input_video, ass_file, output_video):
     
     subprocess.run(command, check=True)
     print(f"Subtitled video created: {output_video}")
-
+    
 # Create a custom thumbnail by overlaying a black box with text on the base thumbnail.
 def create_thumbnail(base_thumbnail_path, part_text, output_path):
     try:
@@ -356,7 +360,7 @@ def process_folder(youtube, folder_path):
         # Load the WhisperX model and alignment model.
         device = "cuda" if torch.cuda.is_available() else "cpu"
         print(f"Using device: {device} for subtitle generation")
-        pipeline = whisperx.load_model("medium", device, compute_type="float32")
+        pipeline = whisperx.load_model("medium", device, compute_type="float32", language="en")
         print(f"Transcribing video for subtitles: {file_path}")
         result = pipeline.transcribe(file_path)
         language = result.get("language", "en")
