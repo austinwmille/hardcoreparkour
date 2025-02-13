@@ -14,9 +14,9 @@ from openai import OpenAI
 
 # ---------------------------------------------------------------- #
 # our folder path
-VIDEO_FOLDER_PATH = "../random clips/"
+VIDEO_FOLDER_PATH = "./"
 
-load_dotenv('mushroom.env')
+load_dotenv('../next steps/mushroom.env')
 
 # Load OpenAI API Key from environment variable
 OPENAI_API_KEY = os.getenv("gptkey")
@@ -27,7 +27,7 @@ if not OPENAI_API_KEY:
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 # Path to your OAuth 2.0 Client ID JSON file
-CLIENT_SECRET_FILE = 'mushroom.json'
+CLIENT_SECRET_FILE = '../next steps/mushroom.json'
 SCOPES = ['https://www.googleapis.com/auth/youtube.upload']
 
 # Authenticate with YouTube API
@@ -55,16 +55,16 @@ def generate_news_metadata(file_path):
     original_file_name = os.path.splitext(os.path.basename(file_path))[0]
 
     prompt = (
-        f"Generate YouTube metadata as JSON (title, description, tags, category) for a provocative right-wing news clip (usually). RULES:\n"
+        f"Generate YouTube metadata as JSON (title, description, tags, category) for a provocative right-wing news clip. Note: we are starting with this content, but the videos may not have anything to do with righ-wing politics at all. RULES:\n"
         f"1. TITLE:\n"
         f"   - Reword the original title (derived from the filename) in a straightforward and neutral manner. Only include hook words if they clearly add value.\n"
         f"2. DESCRIPTION:\n"
         f"   - Provide a simple, clear description that is not too dramatic.\n"
         f"   - Do not include generic calls to action except an optional brief note such as (or similar to) 'Subscribe for more digestible clips every week!'.\n"
         f"3. TAGS:\n"
-        f"   - Include relevant tags that reflect interviews, debates, and news content without overusing trendy terms (unless the video has no debates/interviews/talking/panels/etc).\n"
+        f"   - Include relevant tags that reflects the content and related material. Don't overuse trendy terms, but we can have some creative license here.\n"
         f"4. CATEGORY:\n"
-        f"   - Set the category to 'News'.\n"
+        f"   - Set the category to 'Entertainment'.\n"
         f"---\n"
         f"IMPORTANT: Return only a valid JSON object with no markdown formatting or additional text.\n"
         f"Filename: {original_file_name}\n"
@@ -94,8 +94,8 @@ def generate_news_metadata(file_path):
         metadata = json.loads(metadata_content)
 
         # Force the category to be 'News'
-        metadata['category'] = 'News'
-        metadata['categoryId'] = '25'
+        metadata['category'] = 'Entertainment'
+        metadata['categoryId'] = '27'
         return metadata
 
     except json.JSONDecodeError:
@@ -109,7 +109,7 @@ def generate_news_metadata(file_path):
                 "birds", "parakeets", "budgies", "parakeet", 
                 "budgie", "parrot", "parrake", "bird", "fly", "flying", "sky"
             ],
-            "categoryId": "25"
+            "categoryId": "27"
         }
     except Exception as e:
         print(f"Error generating metadata: {e}")
@@ -122,7 +122,7 @@ def generate_news_metadata(file_path):
                 "birds", "parakeets", "budgies", "parakeet", 
                 "budgie", "parrot", "parrake", "bird", "fly", "flying", "sky"
             ],
-            "categoryId": "25"
+            "categoryId": "27"
         }
 
 def upload_video(youtube, file_path, metadata):
@@ -144,7 +144,7 @@ def upload_video(youtube, file_path, metadata):
                 "birds", "parakeets", "budgies", "parakeet", 
                 "budgie", "parrot", "parrake", "bird", "fly", "flying", "sky"
             ]),
-            'categoryId': "25",  # Force category to 'News'
+            'categoryId': "27",  # Force category to 'News'
         },
         'status': {
             'privacyStatus': 'public',  # Options: 'public', 'unlisted', 'private'
@@ -197,7 +197,7 @@ def generate_ass_karaoke_subtitles(aligned_segments, ass_path, max_words=3, paus
         "Alignment,MarginL,MarginR,MarginV,Encoding\n"
         # Style: Arial, size 36, primary colour = #6A0DAD (ASS BGR: &H00AD0D6A),
         # Alignment=2 (bottom-center) with MarginV=300 (which you can adjust to push them higher).
-        "Style: Default,Arial,48,&H00AD0D6A,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,1,2,2,10,10,700,1\n"
+        "Style: Default,Arial,48,&H00AD0D6A,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,1,2,2,10,10,800,1\n"
         "\n"
         "[Events]\n"
         "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n"

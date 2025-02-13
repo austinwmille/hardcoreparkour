@@ -7,21 +7,22 @@ import datetime
 # from concurrent.futures import ThreadPoolExecutor   #this is for future multithreading logic
 
 # Configuration
-MOVIE_FOLDER = "C:/Users/austi/Desktop/ctr+X/processmesempai"
-PARKOUR_FOLDER = "C:/Users/austi/Desktop/ctr+X/extrascripts/stock vids/minecraft parkour"
-OUTPUT_FOLDER = "C:/Users/austi/Desktop/hardcoreparkour/random clips"
-CLIP_DURATION = 45  # 10 minutes == 600 seconds
+MOVIE_FOLDER = "./"
+PARKOUR_FOLDER = "./minecraft parkour vids/"
+OUTPUT_FOLDER = "./"
+CLIP_DURATION = 804  # 10 minutes == 600 seconds
 
 def find_video_files(folder):
-    """Return a list of video files in the given folder"""
+    """Return a list of video files in the given folder (non-recursive)."""
     video_extensions = ('.mp4', '.mov', '.mkv')
     video_files = []
-    for root, dirs, files in os.walk(folder):
-        for file in files:
-            if file.lower().endswith(video_extensions):
-                video_files.append(os.path.join(root, file))
+    for file in os.listdir(folder):
+        # Create the full path and check if it's a file
+        full_path = os.path.join(folder, file)
+        if os.path.isfile(full_path) and file.lower().endswith(video_extensions):
+            video_files.append(full_path)
     return video_files
-
+    
 def pick_random_file(folder, min_length=CLIP_DURATION):
     """Pick a random video file that is at least the required length."""
     files = find_video_files(folder)
@@ -58,14 +59,14 @@ def pick_random_start(total_duration):
 import cv2
 import numpy as np
 
-def extract_keyframes(trimmed_video, output_folder):
-    """Extracts keyframes from the final 10-minute clip, not the original full video."""
+def extract_keyframes(trimmed_video, output_folder, movie_file):
+    """Extracts keyframes from the final clip and deletes the original movie file."""
     keyframes_folder = os.path.join(output_folder, "keyframes")
     os.makedirs(keyframes_folder, exist_ok=True)
 
     cmd = [
         'ffmpeg', '-y',
-        '-i', trimmed_video,  # Now using the trimmed 10-minute clip!
+        '-i', trimmed_video,  # Now using the trimmed clip!
         '-vf', "select='eq(pict_type\\,I)',scale=1920:1080:flags=lanczos",
         '-vsync', 'vfr',
         os.path.join(keyframes_folder, "frame_%04d.jpg")
@@ -78,6 +79,14 @@ def extract_keyframes(trimmed_video, output_folder):
     except subprocess.CalledProcessError as e:
         print(f"❌ Error extracting keyframes: {e}")
         return None
+
+    # Delete the original movie file after processing
+    if os.path.exists(movie_file):
+        try:
+            os.remove(movie_file)
+            print(f"🗑 Deleted original movie file: {movie_file}")
+        except Exception as e:
+            print(f"Error deleting original movie file: {e}")
 
     return keyframes_folder
 
@@ -150,7 +159,8 @@ def get_image_dimensions(image_path):
 
 def generate_thumbnail(movie_file, output_folder):
     """Extracts keyframes, selects the best one as a thumbnail, applies vignette + border, and cleans up."""
-    keyframes_folder = extract_keyframes(movie_file, output_folder)
+    trimmed_video = movie_file
+    keyframes_folder = extract_keyframes(trimmed_video, output_folder, movie_file)
 
     if not keyframes_folder:
         print("No keyframes found, using default middle frame.")
@@ -440,7 +450,7 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
     for index, segment_file in enumerate(sorted(split_files), start=1):
         new_name = os.path.join(output_folder, f"{safe_title}_Part_{index}.mp4")
         os.rename(segment_file, new_name)
-        print(f"🔄 Renamed {segment_file} -> {new_name}")
+        print(f"Renamed {segment_file} -> {new_name}")
 
     return output_file  # Return the stacked file
 

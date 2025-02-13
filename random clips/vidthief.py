@@ -1,3 +1,6 @@
+# this script downloads a video from a link
+# it is step number one
+
 import yt_dlp
 
 LOG_FILE = 'downloaded_urls.txt'
@@ -40,7 +43,7 @@ def main():
     # List of video URLs (replace or extend as needed)
     # don't forget to put a comma after them!!
     video_urls = [
-        "https://www.youtube.com/watch?v=hnqlQrwP0q4&list=PLO7ChEvlE6fcM2DFeoizuaTMa4u1Y9eRR&index=26",  # Example YouTube URL
+        "https://www.youtube.com/watch?v=KDorKy-13ak",  # Example YouTube URL
         
         # Add more video URLs here
     ]
