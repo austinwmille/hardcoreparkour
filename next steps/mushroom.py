@@ -197,7 +197,7 @@ def generate_ass_karaoke_subtitles(aligned_segments, ass_path, max_words=3, paus
         "Alignment,MarginL,MarginR,MarginV,Encoding\n"
         # Style: Arial, size 36, primary colour = #6A0DAD (ASS BGR: &H00AD0D6A),
         # Alignment=2 (bottom-center) with MarginV=300 (which you can adjust to push them higher).
-        "Style: Default,Arial,48,&H00AD0D6A,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,1,2,2,10,10,800,1\n"
+        "Style: Default,Arial,48,&H00AD0D6A,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,3,1,2,10,10,850,1\n"
         "\n"
         "[Events]\n"
         "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n"
@@ -253,7 +253,11 @@ def generate_ass_karaoke_subtitles(aligned_segments, ass_path, max_words=3, paus
                     duration_cs = int(round((block[i+1]["start"] - word["start"]) * 100))
                 else:
                     duration_cs = int(round((word["end"] - word["start"]) * 100))
-                karaoke_text += f"{{\\t(0,250,\\fscx250,\\fscy250,\\1c&H002828C6&)}}{{\\k{duration_cs}}}{word_text} "
+                karaoke_text += (
+                    f"{{\\t(0,250,\\fscx250,\\fscy250,\\1c&H002828C6&)"
+                    f"{{\\k{duration_cs}}}{{\\3c&HFFFFFF&\\3a&HFF&\\bord2\\shad2}}"
+                    f"{word_text} "
+                )
             karaoke_text = karaoke_text.strip()
             line = (
                 f"Dialogue: 0,{format_ass_timestamp(block_start)},{format_ass_timestamp(block_end)},Default,,0,0,0,,{karaoke_text}\n"

@@ -10,7 +10,7 @@ import datetime
 MOVIE_FOLDER = "./"
 PARKOUR_FOLDER = "./minecraft parkour vids/"
 OUTPUT_FOLDER = "./"
-CLIP_DURATION = 804  # 10 minutes == 600 seconds
+CLIP_DURATION = 499  # 10 minutes == 600 seconds
 
 def find_video_files(folder):
     """Return a list of video files in the given folder (non-recursive)."""
@@ -325,16 +325,23 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
             cmd = [
                 "ffprobe", "-v", "error",
                 "-select_streams", "v:0",
-                "-show_entries", "stream=width",
+                "-show_entries", "stream=width,codec_name",
                 "-of", "csv=p=0",
                 video_file
             ]
             result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-            return int(result.stdout.strip())
+            parts = [p.strip() for p in result.stdout.strip().split(",") if p.strip()]
+            # Find the numeric part (the width)
+            for part in parts:
+                try:
+                    return int(part)
+                except ValueError:
+                    continue
+            raise ValueError("No valid width found in ffprobe output.")
         except Exception as e:
             print(f"⚠️ Error getting width of {video_file}: {e}")
-            return None  # Return None instead of breaking the script
-            
+            return None
+
     top_width, bottom_width = get_video_width(top_video), get_video_width(bottom_video)
     if not top_width or not bottom_width:
         print("Error determining video widths.")
@@ -355,7 +362,12 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
         ]
         
         video_info = subprocess.run(cmd_check, capture_output=True, text=True).stdout.strip()
-        width_check, codec_name = video_info.split("\n")[0].split(",")  # Extract width & codec
+        # Sanitize the line by stripping trailing commas and whitespace
+        line = video_info.split("\n")[0].rstrip(',').strip()
+        parts = [part.strip() for part in line.split(",") if part.strip()]
+        if len(parts) < 2:
+            raise ValueError("Unexpected ffprobe output format.")
+        width_check, codec_name = parts[0], parts[1]
 
         if width_check == str(width) and codec_name == "h264":
             # ✅ If already correct width and H.264, just copy (NO re-encoding!)
