@@ -61,7 +61,7 @@ def pick_random_start(total_duration):
         return 0
     return random.randint(0, max_start)
 
-def ffmpeg_extract(input_file, start_time, output_file, clip_duration=600):
+def ffmpeg_extract(input_file, start_time, output_file):
     """Extract a clip using ffmpeg, avoiding unnecessary re-encoding when possible."""
     cmd_check = [
         "ffprobe", "-v", "error", "-select_streams", "v:0",
@@ -75,7 +75,7 @@ def ffmpeg_extract(input_file, start_time, output_file, clip_duration=600):
             "ffmpeg", "-y",
             "-ss", str(start_time),
             "-i", input_file,
-            "-t", str(clip_duration),
+            "-t", str(CLIP_DURATION),
             "-c:v", "copy", "-c:a", "copy",
             output_file
         ]
@@ -85,7 +85,7 @@ def ffmpeg_extract(input_file, start_time, output_file, clip_duration=600):
             "ffmpeg", "-y",
             "-ss", str(start_time),
             "-i", input_file,
-            "-t", str(clip_duration),
+            "-t", str(CLIP_DURATION),
             "-c:v", "libx264", "-crf", "19", "-preset", "medium",
             "-c:a", "aac", "-b:a", "160k",
             "-threads", "4",
