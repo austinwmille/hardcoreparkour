@@ -9,6 +9,7 @@ The paths for these folders are hardcoded in the script for my computer. You mus
 
 The output folder is /'random clips'.
 
+As of 02.23.2025, i am no longer sure of the flow, below. it's probs pretty close tho
 As of 02/07/2025, it works thusly:
 
 	I have a folder of maybe four or five (at least 1) 30 minute long Minecraft parkour videos.
