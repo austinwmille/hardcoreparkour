@@ -24,7 +24,7 @@ def download_video(url):
     ydl_opts = {
         'format': 'bestvideo+bestaudio/best',  # Prioritize separate streams, fallback to single best
         'merge_output_format': 'mp4',  # Ensure output is always MP4
-        'outtmpl': '%(upload_date)s-%(title)s.%(ext)s',  # Metadata-rich filenames
+        'outtmpl': './gou/%(upload_date)s-%(title)s.%(ext)s',  # Metadata-rich filenames
         'sanitize_filename': True,  # Remove special characters from filenames
         'quiet': False,  # Show progress
     }
@@ -41,19 +41,21 @@ def main():
     downloaded_urls = load_downloaded_urls()
 
     # List of video URLs (replace or extend as needed)
-    # don't forget to put a comma after them!!
     video_urls = [
-        "https://www.youtube.com/watch?v=KDorKy-13ak",  # Example YouTube URL
-        
+        #"https://www.youtube.com/watch?v=3FvYvjYjxGs",  # Example YouTube URL
+        #"https://www.youtube.com/watch?v=Aoesyy3cbtQ",
+        "",
         # Add more video URLs here
     ]
 
     for url in video_urls:
         if url not in downloaded_urls:
             print(f"Downloading: {url}")
-            download_video(url)  # Download the video
-            save_downloaded_url(url)  # Log the URL
+            download_video(url)         # Download the video
+            save_downloaded_url(url)      # Log the URL
             print(f"Downloaded and logged: {url}")
+            # Exit after processing one video so that the workflow can continue with the next steps.
+            break
         else:
             print(f"Already downloaded: {url}")
 

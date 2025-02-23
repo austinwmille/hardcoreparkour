@@ -176,7 +176,7 @@ def format_ass_timestamp(seconds):
     centiseconds = int((seconds - total_seconds) * 100)
     return f"{hours}:{minutes:02}:{secs:02}.{centiseconds:02}"
 
-def generate_ass_karaoke_subtitles(aligned_segments, ass_path, max_words=3, pause_threshold=0.3):
+def generate_ass_karaoke_subtitles(aligned_segments, ass_path, max_words=3, pause_threshold=0.4):
     """
     Generate an ASS subtitle file using karaoke timing.
     Groups word-level alignments into blocks based on a maximum number of words or a pause threshold.
@@ -197,7 +197,7 @@ def generate_ass_karaoke_subtitles(aligned_segments, ass_path, max_words=3, paus
         "Alignment,MarginL,MarginR,MarginV,Encoding\n"
         # Style: Arial, size 36, primary colour = #6A0DAD (ASS BGR: &H00AD0D6A),
         # Alignment=2 (bottom-center) with MarginV=300 (which you can adjust to push them higher).
-        "Style: Default,Arial,48,&H00AD0D6A,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,3,1,2,10,10,850,1\n"
+        "Style: Default,Arial,48,&H00AD0D6A,&H00FFFFFF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,3,2,2,10,10,900,1\n"
         "\n"
         "[Events]\n"
         "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n"
@@ -254,8 +254,8 @@ def generate_ass_karaoke_subtitles(aligned_segments, ass_path, max_words=3, paus
                 else:
                     duration_cs = int(round((word["end"] - word["start"]) * 100))
                 karaoke_text += (
-                    f"{{\\t(0,250,\\fscx250,\\fscy250,\\1c&H002828C6&)"
-                    f"{{\\k{duration_cs}}}{{\\3c&HFFFFFF&\\3a&HFF&\\bord2\\shad2}}"
+                    f"{{\\t(0,420,\\fscx250,\\fscy250,\\1c&H002828C6&)"
+                    f"{{\\k{duration_cs}}}{{\\3c&HFFFFFF&\\3a&HFF&\\bord3\\shad2}}"
                     f"{word_text} "
                 )
             karaoke_text = karaoke_text.strip()
@@ -293,28 +293,52 @@ def create_thumbnail(base_thumbnail_path, part_text, output_path):
         return None
 
     width, height = img.size
-    box_width, box_height = 200, 50
+
+    # Increase the overlay box size and move it towards the bottom for better prominence.
+    box_width, box_height = 300, 70  
     box_x = (width - box_width) // 2
-    box_y = height // 2 + 20  # Just below the middle
+    box_y = height - box_height - 50  # 50 pixels margin from the bottom
+
+    # Create a vertical gradient for the overlay (opaque at the top fading to transparent at the bottom)
+    gradient = Image.new('L', (box_width, box_height), 0)
+    for y in range(box_height):
+        # Compute a gradient value that goes from 255 (opaque) to 0 (transparent)
+        gradient_value = int(255 * (1 - (y / box_height)))
+        for x in range(box_width):
+            gradient.putpixel((x, y), gradient_value)
+
+    # Create a black overlay image and apply the gradient as its alpha channel
+    overlay = Image.new('RGBA', (box_width, box_height), (0, 0, 0, 200))
+    overlay.putalpha(gradient)
+
+    # Paste the overlay onto the original image using itself as a mask
+    img.paste(overlay, (box_x, box_y), overlay)
 
     draw = ImageDraw.Draw(img)
-    black_color = (0, 0, 0, 200)
-    draw.rectangle([box_x, box_y, box_x + box_width, box_y + box_height], fill=black_color)
-
     text = part_text
-    font_size = 28
+    font_size = 36  # Increase font size for better readability
     try:
         font = ImageFont.truetype("arial.ttf", font_size)
     except IOError:
         font = ImageFont.load_default()
 
+    # Measure text dimensions
     bbox = font.getbbox(text)
     text_width = bbox[2] - bbox[0]
     text_height = bbox[3] - bbox[1]
     text_x = box_x + (box_width - text_width) // 2
     text_y = box_y + (box_height - text_height) // 2
 
-    draw.text((text_x, text_y), text, font=font, fill=(255, 255, 255, 255))
+    # Draw a drop shadow for the text to give it some depth
+    shadow_offset = (2, 2)
+    shadow_color = (0, 0, 0, 150)
+    draw.text((text_x + shadow_offset[0], text_y + shadow_offset[1]), text, font=font,
+              fill=shadow_color, stroke_width=2, stroke_fill=shadow_color)
+
+    # Draw the main text in white with a black stroke to separate it from similar backgrounds
+    draw.text((text_x, text_y), text, font=font, fill=(255, 255, 255, 255),
+              stroke_width=2, stroke_fill=(0, 0, 0, 255))
+    
     try:
         img.convert("RGB").save(output_path, "JPEG")
     except Exception as e:
@@ -375,7 +399,7 @@ def process_folder(youtube, folder_path):
         print("Forced alignment complete for subtitles.")
         ass_file = os.path.join(folder_path, f"temp_karaoke_{part_number}.ass")
         print("Generating ASS karaoke subtitle file...")
-        generate_ass_karaoke_subtitles(result_aligned["segments"], ass_file, max_words=3, pause_threshold=0.3)
+        generate_ass_karaoke_subtitles(result_aligned["segments"], ass_file, max_words=3, pause_threshold=0.4)
         subbed_video = os.path.join(folder_path, f"temp_subbed_{part_number}.mp4")
         print("Burning subtitles into the video...")
         burn_subtitles(file_path, ass_file, subbed_video)
@@ -398,8 +422,8 @@ def process_folder(youtube, folder_path):
         else:
             print("Skipping thumbnail generation due to missing base thumbnail or video ID.")
 
-        print("Waiting 10 minutes before the next upload.")
-        time.sleep(600)  # Wait 10 minutes (600 seconds)
+        print("Waiting 5 minutes before processing next clip.")
+        time.sleep(300)  # Wait 10 minutes (600 seconds)
         # Optionally, remove the temporary subbed video after upload if desired.
         if os.path.exists(subbed_video):
             os.remove(subbed_video)

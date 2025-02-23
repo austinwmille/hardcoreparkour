@@ -4,36 +4,41 @@ import subprocess
 import sys
 import tempfile
 import datetime
-# from concurrent.futures import ThreadPoolExecutor   #this is for future multithreading logic
+import cv2
+import numpy as np
+import shutil
+import glob
+import re
+from collections import Counter
+import torch
+import whisperx
 
 # Configuration
-MOVIE_FOLDER = "./"
+MOVIE_FOLDER = "./gou/"
 PARKOUR_FOLDER = "./minecraft parkour vids/"
-OUTPUT_FOLDER = "./"
-CLIP_DURATION = 499  # 10 minutes == 600 seconds
+OUTPUT_FOLDER = "./"  # This will be used inside the stack_videos function
+CLIP_DURATION = 600 #length in seconds
 
 def find_video_files(folder):
     """Return a list of video files in the given folder (non-recursive)."""
     video_extensions = ('.mp4', '.mov', '.mkv')
     video_files = []
     for file in os.listdir(folder):
-        # Create the full path and check if it's a file
         full_path = os.path.join(folder, file)
         if os.path.isfile(full_path) and file.lower().endswith(video_extensions):
             video_files.append(full_path)
     return video_files
     
 def pick_random_file(folder, min_length=CLIP_DURATION):
-    """Pick a random video file that is at least the required length."""
+    """Pick a random video file from the given folder."""
     files = find_video_files(folder)
-    valid_files = [f for f in files if get_duration(f) >= min_length]
-    if not valid_files:
-        print(f"No valid video files longer than {min_length} seconds found in {folder}")
+    if not files:
+        print(f"No video files found in {folder}")
         sys.exit(1)
-    return random.choice(valid_files)
+    return random.choice(files)
 
 def get_duration(file_path):
-    """Get duration of video file in seconds using ffprobe"""
+    """Get duration of video file in seconds using ffprobe."""
     cmd = [
         'ffprobe', '-v', 'error',
         '-select_streams', 'v:0',
@@ -50,239 +55,20 @@ def get_duration(file_path):
         sys.exit(1)
 
 def pick_random_start(total_duration):
-    """Pick a random start time for the clip"""
+    """Pick a random start time for the clip."""
     max_start = total_duration - CLIP_DURATION
     if max_start <= 0:
         return 0
     return random.randint(0, max_start)
 
-import cv2
-import numpy as np
-
-def extract_keyframes(trimmed_video, output_folder, movie_file):
-    """Extracts keyframes from the final clip and deletes the original movie file."""
-    keyframes_folder = os.path.join(output_folder, "keyframes")
-    os.makedirs(keyframes_folder, exist_ok=True)
-
-    cmd = [
-        'ffmpeg', '-y',
-        '-i', trimmed_video,  # Now using the trimmed clip!
-        '-vf', "select='eq(pict_type\\,I)',scale=1920:1080:flags=lanczos",
-        '-vsync', 'vfr',
-        os.path.join(keyframes_folder, "frame_%04d.jpg")
-    ]
-
-    try:
-        print(f"Extracting keyframes from clip: {trimmed_video}...")
-        subprocess.run(cmd, check=True)
-        print(f"✅ Keyframes saved in: {keyframes_folder}")
-    except subprocess.CalledProcessError as e:
-        print(f"❌ Error extracting keyframes: {e}")
-        return None
-
-    # Delete the original movie file after processing
-    if os.path.exists(movie_file):
-        try:
-            os.remove(movie_file)
-            print(f"🗑 Deleted original movie file: {movie_file}")
-        except Exception as e:
-            print(f"Error deleting original movie file: {e}")
-
-    return keyframes_folder
-
-def calculate_sharpness(image):
-    """Measure image sharpness using the Laplacian variance."""
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    return cv2.Laplacian(gray, cv2.CV_64F).var()
-
-def choose_best_thumbnail(keyframes_folder):
-    """Select the best keyframe by prioritizing a clear, sharp face with open eyes."""
-    keyframe_files = sorted(os.listdir(keyframes_folder))
-    
-    if not keyframe_files:
-        print("No keyframes found.")
-        return None
-
-    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
-    eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_eye.xml")  # Added eye detection
-
-    best_face_frame = None
-    best_score = 0  # Score based on sharpness & face size
-
-    for file in keyframe_files:
-        frame_path = os.path.join(keyframes_folder, file)
-        img = cv2.imread(frame_path)
-
-        if img is None:
-            continue
-
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(50, 50))
-
-        for (x, y, w, h) in faces:
-            face_area = w * h  # Bigger face = better
-            sharpness = calculate_sharpness(img)
-
-            # Detect eyes inside the face region
-            face_roi = gray[y:y+h, x:x+w]
-            eyes = eye_cascade.detectMultiScale(face_roi, scaleFactor=1.1, minNeighbors=3)
-
-            # Score: (bigger faces + more sharpness), ignore frames where no eyes are found (likely blinking)
-            score = face_area * 0.3 + sharpness * 0.7
-            if len(eyes) > 0 and score > best_score:
-                best_score = score
-                best_face_frame = frame_path
-
-    if best_face_frame:
-        print(f"✅ Selected best frame: {best_face_frame} (Sharp & Good Face)")
-        return best_face_frame
-    else:
-        print("⚠️ No ideal face found, using brightest frame instead.")
-        return None  # Fallback to brightness logic if needed
-
-import shutil  # Imported some things mid script to see where i used them
-
-def get_image_dimensions(image_path):
-    """Get the width and height of an image using FFmpeg."""
-    cmd = [
-        "ffprobe", "-v", "error", "-select_streams", "v:0",
-        "-show_entries", "stream=width,height", "-of", "csv=p=0",
-        image_path
-    ]
-    try:
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        width, height = map(int, result.stdout.strip().split(","))
-        return width, height
-    except Exception as e:
-        print(f"Error getting image dimensions: {e}")
-        return None, None
-
-def generate_thumbnail(movie_file, output_folder):
-    """Extracts keyframes, selects the best one as a thumbnail, applies vignette + border, and cleans up."""
-    trimmed_video = movie_file
-    keyframes_folder = extract_keyframes(trimmed_video, output_folder, movie_file)
-
-    if not keyframes_folder:
-        print("No keyframes found, using default middle frame.")
-        return extract_middle_frame(movie_file, output_folder)  # Fallback
-
-    best_frame = choose_best_thumbnail(keyframes_folder)
-
-    if best_frame:
-        final_thumbnail = os.path.join(output_folder, os.path.basename(movie_file).replace(".mp4", ".jpg"))
-        enhanced_thumbnail = final_thumbnail.replace(".jpg", "_enhanced.jpg")
-
-        # Apply vignette & border, ensuring proper format
-        cmd = [
-            "ffmpeg", "-y", "-i", best_frame,
-            "-vf", "vignette=PI/4, pad=width=iw+60:height=ih+60:x=30:y=30:color=black, format=yuvj420p",
-            "-update", "1", "-frames:v", "1",
-            enhanced_thumbnail
-        ]
-
-        try:
-            subprocess.run(cmd, check=True)
-            print(f"Thumbnail saved: {enhanced_thumbnail}")
-            final_thumbnail = enhanced_thumbnail  # Update the final thumbnail
-        except subprocess.CalledProcessError as e:
-            print(f"Error applying vignette/border: {e}")
-
-    else:
-        print("No suitable keyframes found, using default middle frame.")
-        final_thumbnail = extract_middle_frame(movie_file, output_folder)  # Fallback
-
-    # Cleanup extracted keyframes
-    if os.path.exists(keyframes_folder):
-        shutil.rmtree(keyframes_folder, ignore_errors=True)
-        print(f"Deleted keyframes folder: {keyframes_folder}")
-
-    return final_thumbnail
-
-def extract_middle_frame(video_file, output_folder):
-    """Extracts a single frame from the middle of the video as a fallback thumbnail."""
-    middle_time = get_duration(video_file) // 2
-    thumbnail_path = os.path.join(output_folder, os.path.basename(video_file).replace(".mp4", "_fallback.jpg"))
-
-    cmd = [
-        'ffmpeg', '-y',
-        '-i', video_file,
-        '-ss', str(middle_time),
-        '-vframes', '1',
-        '-q:v', '2',
-        thumbnail_path
-    ]
-    
-    try:
-        subprocess.run(cmd, check=True)
-        print(f"Fallback thumbnail saved: {thumbnail_path}")
-        return thumbnail_path
-    except subprocess.CalledProcessError as e:
-        print(f"Error extracting fallback thumbnail: {e}")
-        return None
-
-def main():
-    output_folder = "C:/Users/austi/Desktop/hardcoreparkour/random clips"
-    
-    for i in range(1):  # Run X times
-
-        # Create temporary files
-        temp_dir = tempfile.gettempdir()
-        movie_clip = os.path.join(temp_dir, f"movie_clip_{os.getpid()}_{i}.mp4")
-        parkour_clip = os.path.join(temp_dir, f"parkour_clip_{os.getpid()}_{i}.mp4")
-
-        try:
-            # 1. Pick random files
-            movie_file = pick_random_file(MOVIE_FOLDER)
-            parkour_file = pick_random_file(PARKOUR_FOLDER)
-
-            # 2. Get durations
-            movie_duration = get_duration(movie_file)
-            parkour_duration = get_duration(parkour_file)
-
-            # 3. Pick start times
-            movie_start = pick_random_start(movie_duration)
-            parkour_start = pick_random_start(parkour_duration)
-
-            # 4. Extract clips
-            ffmpeg_extract(movie_file, movie_start, movie_clip)
-            ffmpeg_extract(parkour_file, parkour_start, parkour_clip)
-
-            # 5. Stack videos
-            output_file = stack_videos(movie_clip, parkour_clip, output_folder, movie_file)
-
-            # 6. Generate thumbnail
-            # Remove old thumbnails before generating new ones
-            # Remove old thumbnail for the current video before generating a new one
-            thumbnail_path = os.path.join(output_folder, os.path.basename(output_file).replace(".mp4", ".jpg"))
-            if os.path.exists(thumbnail_path):
-                os.remove(thumbnail_path)
-
-            generate_thumbnail(movie_file, output_folder)  # Use only the movie file
-
-        finally:
-            # Cleanup temporary files
-            for f in [movie_clip, parkour_clip]:
-                if os.path.exists(f):
-                    os.remove(f)
-
-        print(f"Completed video {i + 1}/x.\n")
-
-    print("All x videos are done!")
-
-import subprocess
-
 def ffmpeg_extract(input_file, start_time, output_file, clip_duration=600):
     """Extract a clip using ffmpeg, avoiding unnecessary re-encoding when possible."""
-    
-    # Check the codec of the input file
     cmd_check = [
         "ffprobe", "-v", "error", "-select_streams", "v:0",
         "-show_entries", "stream=codec_name", "-of", "csv=p=0", input_file
     ]
-    
     codec_name = subprocess.run(cmd_check, capture_output=True, text=True).stdout.strip()
 
-    # ✅ If the video is already H.264, avoid re-encoding
     if codec_name == "h264":
         print(f"✅ Copying clip without re-encoding: {input_file}...")
         cmd = [
@@ -305,19 +91,143 @@ def ffmpeg_extract(input_file, start_time, output_file, clip_duration=600):
             "-threads", "4",
             output_file
         ]
-
     subprocess.run(cmd, check=True)
 
-import glob
+def extract_keyframes(trimmed_video, output_folder, movie_file):
+    """Extracts keyframes from the final clip and deletes the original movie file."""
+    keyframes_folder = os.path.join(output_folder, "keyframes")
+    os.makedirs(keyframes_folder, exist_ok=True)
+    cmd = [
+        'ffmpeg', '-y',
+        '-i', trimmed_video,
+        '-vf', "select='eq(pict_type\\,I)',scale=1920:1080:flags=lanczos",
+        '-vsync', 'vfr',
+        os.path.join(keyframes_folder, "frame_%04d.jpg")
+    ]
+    try:
+        print(f"Extracting keyframes from clip: {trimmed_video}...")
+        subprocess.run(cmd, check=True)
+        print(f"✅ Keyframes saved in: {keyframes_folder}")
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Error extracting keyframes: {e}")
+        return None
+    if os.path.exists(movie_file):
+        try:
+            os.remove(movie_file)
+            print(f"🗑 Deleted original movie file: {movie_file}")
+        except Exception as e:
+            print(f"Error deleting original movie file: {e}")
+    return keyframes_folder
+
+def calculate_sharpness(image):
+    """Measure image sharpness using the Laplacian variance."""
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    return cv2.Laplacian(gray, cv2.CV_64F).var()
+
+def choose_best_thumbnail(keyframes_folder):
+    """Select the best keyframe by prioritizing a clear, sharp face with open eyes."""
+    keyframe_files = sorted(os.listdir(keyframes_folder))
+    if not keyframe_files:
+        print("No keyframes found.")
+        return None
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+    eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_eye.xml")
+    best_face_frame = None
+    best_score = 0
+    for file in keyframe_files:
+        frame_path = os.path.join(keyframes_folder, file)
+        img = cv2.imread(frame_path)
+        if img is None:
+            continue
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(50, 50))
+        for (x, y, w, h) in faces:
+            face_area = w * h
+            sharpness = calculate_sharpness(img)
+            face_roi = gray[y:y+h, x:x+w]
+            eyes = eye_cascade.detectMultiScale(face_roi, scaleFactor=1.1, minNeighbors=3)
+            score = face_area * 0.3 + sharpness * 0.7
+            if len(eyes) > 0 and score > best_score:
+                best_score = score
+                best_face_frame = frame_path
+    if best_face_frame:
+        print(f"✅ Selected best frame: {best_face_frame} (Sharp & Good Face)")
+        return best_face_frame
+    else:
+        print("⚠️ No ideal face found, using brightest frame instead.")
+        return None
+
+def extract_middle_frame(video_file, output_folder):
+    """Extracts a single frame from the middle of the video as a fallback thumbnail."""
+    middle_time = get_duration(video_file) // 2
+    thumbnail_path = os.path.join(output_folder, os.path.basename(video_file).replace(".mp4", "_fallback.jpg"))
+    cmd = [
+        'ffmpeg', '-y',
+        '-i', video_file,
+        '-ss', str(middle_time),
+        '-vframes', '1',
+        '-q:v', '2',
+        thumbnail_path
+    ]
+    try:
+        subprocess.run(cmd, check=True)
+        print(f"Fallback thumbnail saved: {thumbnail_path}")
+        return thumbnail_path
+    except subprocess.CalledProcessError as e:
+        print(f"Error extracting fallback thumbnail: {e}")
+        return None
+
+def generate_thumbnail(movie_file, output_folder):
+    """Extracts keyframes, selects the best one as a thumbnail, applies vignette + border, and cleans up."""
+    trimmed_video = movie_file
+    keyframes_folder = extract_keyframes(trimmed_video, output_folder, movie_file)
+    if not keyframes_folder:
+        print("No keyframes found, using default middle frame.")
+        return extract_middle_frame(movie_file, output_folder)
+    best_frame = choose_best_thumbnail(keyframes_folder)
+    if best_frame:
+        final_thumbnail = os.path.join(output_folder, os.path.basename(movie_file).replace(".mp4", ".jpg"))
+        enhanced_thumbnail = final_thumbnail.replace(".jpg", "_enhanced.jpg")
+        cmd = [
+            "ffmpeg", "-y", "-i", best_frame,
+            "-vf", "vignette=PI/4,eq=contrast=1.3:brightness=0.1:saturation=1.2,unsharp=3:3:1.0:3:3:0.0,pad=width=iw+60:height=ih+60:x=30:y=30:color=black,format=yuvj420p",
+            "-update", "1", "-frames:v", "1",
+            enhanced_thumbnail
+        ]
+        try:
+            subprocess.run(cmd, check=True)
+            print(f"Thumbnail saved: {enhanced_thumbnail}")
+            final_thumbnail = enhanced_thumbnail
+        except subprocess.CalledProcessError as e:
+            print(f"Error applying vignette/border: {e}")
+    else:
+        print("No suitable keyframes found, using default middle frame.")
+        final_thumbnail = extract_middle_frame(movie_file, output_folder)
+    if os.path.exists(keyframes_folder):
+        shutil.rmtree(keyframes_folder, ignore_errors=True)
+        print(f"Deleted keyframes folder: {keyframes_folder}")
+    return final_thumbnail
+
+def get_image_dimensions(image_path):
+    """Get the width and height of an image using FFmpeg."""
+    cmd = [
+        "ffprobe", "-v", "error", "-select_streams", "v:0",
+        "-show_entries", "stream=width,height", "-of", "csv=p=0",
+        image_path
+    ]
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        width, height = map(int, result.stdout.strip().split(","))
+        return width, height
+    except Exception as e:
+        print(f"Error getting image dimensions: {e}")
+        return None, None
 
 def stack_videos(top_video, bottom_video, output_folder, movie_file):
     """Stack two videos vertically, transcribe, generate a title, and split into numbered parts."""
     movie_name = os.path.splitext(os.path.basename(movie_file))[0].replace(" ", "_")
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     output_file = os.path.join(output_folder, f"{movie_name}_{timestamp}.mp4")
-
-    # Step 1: Resize Videos
-    import subprocess  # Ensure subprocess is imported at the top
 
     def get_video_width(video_file):
         """Returns the width of the video using ffprobe."""
@@ -331,7 +241,6 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
             ]
             result = subprocess.run(cmd, capture_output=True, text=True, check=True)
             parts = [p.strip() for p in result.stdout.strip().split(",") if p.strip()]
-            # Find the numeric part (the width)
             for part in parts:
                 try:
                     return int(part)
@@ -348,37 +257,27 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
         sys.exit(1)
 
     target_width = min(top_width, bottom_width)
-    resized_top, resized_bottom = os.path.join(output_folder, "resized_top.mp4"), os.path.join(output_folder, "resized_bottom.mp4")
-
-    import subprocess
+    resized_top = os.path.join(output_folder, "resized_top.mp4")
+    resized_bottom = os.path.join(output_folder, "resized_bottom.mp4")
 
     def resize_video(input_file, output_file, width):
         """Resize video only if necessary, avoiding unnecessary re-encoding."""
-        
-        # Check if video is already the correct width
         cmd_check = [
             "ffprobe", "-v", "error", "-select_streams", "v:0",
             "-show_entries", "stream=width,codec_name", "-of", "csv=p=0", input_file
         ]
-        
         video_info = subprocess.run(cmd_check, capture_output=True, text=True).stdout.strip()
-        # Sanitize the line by stripping trailing commas and whitespace
         line = video_info.split("\n")[0].rstrip(',').strip()
         parts = [part.strip() for part in line.split(",") if part.strip()]
         if len(parts) < 2:
             raise ValueError("Unexpected ffprobe output format.")
         width_check, codec_name = parts[0], parts[1]
-
         if width_check == str(width) and codec_name == "h264":
-            # ✅ If already correct width and H.264, just copy (NO re-encoding!)
             print(f"✅ Skipping resize, copying {input_file}...")
             cmd = ["ffmpeg", "-y", "-i", input_file, "-c:v", "copy", "-c:a", "copy", output_file]
         else:
-            # 🔹 If resizing is needed, use ultrafast CPU encoding OR GPU encoding if available
             print(f"🔹 Resizing {input_file} to width {width}...")
-
-            # **Fastest Option: Use GPU (if available)**
-            gpu_available = False  # Change to True if you have an NVIDIA GPU and want to use NVENC
+            gpu_available = False  # Change to True if GPU encoding is available
             if gpu_available:
                 cmd = [
                     "ffmpeg", "-y", "-hwaccel", "cuda", "-i", input_file,
@@ -388,22 +287,19 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
                     output_file
                 ]
             else:
-                # **Fallback: Fastest CPU-based encoding**
                 cmd = [
                     "ffmpeg", "-y", "-i", input_file,
                     "-vf", f"scale={width}:-2",
                     "-c:v", "libx264", "-preset", "medium", "-crf", "19",
                     "-c:a", "aac", "-b:a", "160k",
-                    "-threads", "4",  # Use more threads if available
+                    "-threads", "4",
                     output_file
                 ]
-
         subprocess.run(cmd, check=True)
 
     resize_video(top_video, resized_top, target_width)
     resize_video(bottom_video, resized_bottom, target_width)
 
-    # Step 2: Stack Videos
     cmd_stack = [
         'ffmpeg', '-y',
         '-threads', '4',
@@ -421,7 +317,6 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
         '-shortest',
         output_file
     ]
-
     try:
         subprocess.run(cmd_stack, check=True)
         print(f"✅ Final stacked video created: {output_file}")
@@ -434,16 +329,12 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
                 os.remove(f)
                 print(f"🗑 Deleted temporary file: {f}")
 
-    # Step 3: 🎙 Transcribe video & generate title BEFORE splitting
     transcript = transcribe_video_whisperx(output_file)
     generated_title = generate_final_title(movie_file, transcript)
-    safe_title = re.sub(r'[^\w\s-]', '', generated_title).replace(" ", "_")  # Remove special chars
-
-    # Step 4: Split Video into 2-Minute Segments
+    safe_title = re.sub(r'[^\w\s-]', '', generated_title).replace(" ", "_")
     split_output_template = os.path.join(output_folder, f"{safe_title}_part_%02d.mp4")
-
-    cmd_split = ["ffmpeg", "-y", "-i", output_file, "-c", "copy", "-map", "0", "-segment_time", "120", "-f", "segment", "-reset_timestamps", "1", split_output_template]
-
+    cmd_split = ["ffmpeg", "-y", "-i", output_file, "-c", "copy", "-map", "0",
+                 "-segment_time", "120", "-f", "segment", "-reset_timestamps", "1", split_output_template]
     try:
         print(f"🔹 Running split command: {' '.join(cmd_split)}")
         subprocess.run(cmd_split, check=True)
@@ -451,79 +342,95 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
     except subprocess.CalledProcessError as e:
         print(f"❌ Error splitting video: {e}")
         sys.exit(1)
-
     split_files = sorted(glob.glob(os.path.join(output_folder, f"{safe_title}_part_*.mp4")))
-
     if os.path.exists(output_file):
         os.remove(output_file)
         print(f"🗑 Deleted full video: {output_file}")
-
-    # Step 5: Rename Segments for Consistency
     for index, segment_file in enumerate(sorted(split_files), start=1):
         new_name = os.path.join(output_folder, f"{safe_title}_Part_{index}.mp4")
         os.rename(segment_file, new_name)
         print(f"Renamed {segment_file} -> {new_name}")
-
-    return output_file  # Return the stacked file
-
-import re
-from collections import Counter
+    return output_file
 
 def generate_title_from_filename(movie_file):
     """Generate a title from the original filename."""
     base_name = os.path.basename(movie_file).replace(".mp4", "")
-    cleaned_title = re.sub(r'[_\-0-9]', ' ', base_name)  # Remove special chars
-    return ' '.join([word.capitalize() for word in cleaned_title.split()])  # Capitalize words
+    cleaned_title = re.sub(r'[_\-0-9]', ' ', base_name)
+    return ' '.join([word.capitalize() for word in cleaned_title.split()])
 
 def generate_title_from_transcript(transcript_text, weight=0.3):
     """Extract top keywords from transcript but limit their influence."""
-    words = re.findall(r'\b\w+\b', transcript_text.lower())  # Extract words
+    words = re.findall(r'\b\w+\b', transcript_text.lower())
     ignore_words = {"the", "and", "to", "is", "of", "a", "in", "that", "it", "on", "with", "this", "for"}
     filtered_words = [word for word in words if word not in ignore_words]
-    common_words = Counter(filtered_words).most_common(5)  # Get top 5 keywords
-
-    # Keep only a percentage of transcript-based words (e.g., 30% weight)
-    num_to_include = max(1, int(len(common_words) * weight))  # Ensure at least 1 word
+    common_words = Counter(filtered_words).most_common(5)
+    num_to_include = max(1, int(len(common_words) * weight))
     transcript_keywords = ' '.join([word.capitalize() for word, _ in common_words[:num_to_include]])
-
     return transcript_keywords
 
 def generate_final_title(movie_file, transcript_text=None):
-    """Prioritize the movie filename and add transcript keywords only if useful."""
+    """Prioritize the movie filename and add transcript keywords if useful."""
     filename_title = generate_title_from_filename(movie_file)
-
     if transcript_text:
         transcript_title = generate_title_from_transcript(transcript_text)
-
-        # Only add transcript keywords if they add new meaning
         if transcript_title and transcript_title.lower() not in filename_title.lower():
-            return f"{filename_title} – {transcript_title}"  # Keep the filename as the main part
-
-    return filename_title  # Default to just the filename if transcript is weak
-
-import whisperx
-import torch
+            return f"{filename_title} – {transcript_title}"
+    return filename_title
 
 def transcribe_video_whisperx(video_path):
     """Transcribe audio from a video using WhisperX."""
     print(f"🎙 Transcribing: {video_path}...")
-
-    # Load WhisperX model
     device = "cuda" if torch.cuda.is_available() else "cpu"
-
-    # Force float32 precision to avoid the error
     compute_type = "float32" if device == "cpu" else "float16"
     model = whisperx.load_model("base", device, compute_type=compute_type)
-
-    # Transcribe audio
     audio = whisperx.load_audio(video_path)
     result = model.transcribe(audio)
-
-    # Extract transcript text
     transcript_text = " ".join([seg["text"] for seg in result["segments"]])
-
     print(f"✅ Transcription complete: {len(transcript_text)} characters")
     return transcript_text
+
+def main():
+    # Set your output folder where the final video and related files will be saved
+    output_folder = "C:/Users/austi/Desktop/hardcoreparkour/random clips"
+    
+    # Create temporary file paths for the movie and parkour clips
+    temp_dir = tempfile.gettempdir()
+    movie_clip = os.path.join(temp_dir, f"movie_clip_{os.getpid()}.mp4")
+    parkour_clip = os.path.join(temp_dir, f"parkour_clip_{os.getpid()}.mp4")
+
+    try:
+        # 1. Pick random files from each folder
+        movie_file = pick_random_file(MOVIE_FOLDER)
+        parkour_file = pick_random_file(PARKOUR_FOLDER)
+
+        # 2. Get durations of the chosen files
+        movie_duration = get_duration(movie_file)
+        parkour_duration = get_duration(parkour_file)
+
+        # 3. Pick random start times for each clip
+        movie_start = pick_random_start(movie_duration) #change to 0 to use whole video
+        parkour_start = pick_random_start(parkour_duration)
+
+        # 4. Extract clips from both files
+        ffmpeg_extract(movie_file, movie_start, movie_clip)
+        ffmpeg_extract(parkour_file, parkour_start, parkour_clip)
+
+        # 5. Stack the two clips into one video
+        output_file = stack_videos(movie_clip, parkour_clip, output_folder, movie_file)
+
+        # 6. Generate a thumbnail for the movie file
+        thumbnail_path = os.path.join(output_folder, os.path.basename(output_file).replace(".mp4", ".jpg"))
+        if os.path.exists(thumbnail_path):
+            os.remove(thumbnail_path)
+        generate_thumbnail(movie_file, output_folder)
+
+    finally:
+        # Cleanup temporary files
+        for f in [movie_clip, parkour_clip]:
+            if os.path.exists(f):
+                os.remove(f)
+
+    print("✅ Processing complete for this video.")
 
 if __name__ == "__main__":
     main()
