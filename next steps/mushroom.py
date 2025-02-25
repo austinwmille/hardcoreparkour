@@ -55,7 +55,7 @@ def generate_news_metadata(file_path):
     original_file_name = os.path.splitext(os.path.basename(file_path))[0]
 
     prompt = (
-        f"Generate YouTube metadata as JSON (title, description, tags, category). If it derives value, search the web for up-to-date (February 2025) and culturally relevant dialogues about the topic. RULES:\n"
+        f"Generate YouTube metadata as JSON (title, description, tags, category). It's for a kids video, and we want clicks and views. ULES:\n"
         f"1. TITLE:\n"
         f"   - Reword the original title (derived from the filename) in a straightforward and neutral manner. Only include hook words if they clearly add value.\n"
         f"2. DESCRIPTION:\n"
@@ -148,7 +148,7 @@ def upload_video(youtube, file_path, metadata):
         },
         'status': {
             'privacyStatus': 'public',  # Options: 'public', 'unlisted', 'private'
-            'selfDeclaredMadeForKids': False  # Default to "Not Made for Kids"
+            'selfDeclaredMadeForKids': True  # Default to "Not Made for Kids"
         }
     }
 

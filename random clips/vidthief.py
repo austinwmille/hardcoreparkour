@@ -42,8 +42,8 @@ def main():
 
     # List of video URLs (replace or extend as needed)
     video_urls = [
-        #"https://www.youtube.com/watch?v=3FvYvjYjxGs",  # Example YouTube URL
-        #"https://www.youtube.com/watch?v=Aoesyy3cbtQ",
+        "https://www.youtube.com/watch?v=tvcgHT_sYPA",  # Example YouTube URL
+        "https://www.youtube.com/watch?v=G7NZnPWgK4Q",
         "",
         # Add more video URLs here
     ]

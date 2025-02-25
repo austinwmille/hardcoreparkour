@@ -186,7 +186,8 @@ def generate_thumbnail(movie_file, output_folder):
         return extract_middle_frame(movie_file, output_folder)
     best_frame = choose_best_thumbnail(keyframes_folder)
     if best_frame:
-        final_thumbnail = os.path.join(output_folder, os.path.basename(movie_file).replace(".mp4", ".jpg"))
+        basename = os.path.splitext(os.path.basename(movie_file))[0]
+        final_thumbnail = os.path.join(output_folder, f"{basename}.jpg")
         enhanced_thumbnail = final_thumbnail.replace(".jpg", "_enhanced.jpg")
         cmd = [
             "ffmpeg", "-y", "-i", best_frame,
