@@ -298,15 +298,31 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
                 ]
         subprocess.run(cmd, check=True)
 
-    resize_video(top_video, resized_top, target_width)
+        resize_video(top_video, resized_top, target_width)
     resize_video(bottom_video, resized_bottom, target_width)
 
+    # Set final output resolution to 9:16 aspect ratio.
+    final_width = target_width
+    final_height = int(final_width * 16 / 9)
+    movie_ratio = 0.7  # Movie (top video) takes 70% of the height.
+    top_height = int(final_height * movie_ratio)
+    bottom_height = final_height - top_height
+
+    # Modify the filter_complex:
+    # - For each input, we force fps=30.
+    # - We crop each video to the desired height (centered vertically using (in_h - desired)/2).
+    # - Then we vertically stack and finally scale to ensure a 9:16 output.
     cmd_stack = [
         'ffmpeg', '-y',
         '-threads', '4',
         '-i', resized_top,
         '-i', resized_bottom,
-        '-filter_complex', '[0:v]fps=30[v0];[1:v]fps=30[v1];[v0][v1]vstack=inputs=2[v]',
+        '-filter_complex',
+        (
+            f"[0:v]fps=30,crop={final_width}:{top_height}:0:((in_h-{top_height})/2)[v0]; "
+            f"[1:v]fps=30,crop={final_width}:{bottom_height}:0:((in_h-{bottom_height})/2)[v1]; "
+            f"[v0][v1]vstack=inputs=2,scale={final_width}:{final_height}[v]"
+        ),
         '-map', '[v]',
         '-map', '0:a?',
         '-map', '1:a?',
@@ -318,6 +334,7 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
         '-shortest',
         output_file
     ]
+    
     try:
         subprocess.run(cmd_stack, check=True)
         print(f"✅ Final stacked video created: {output_file}")

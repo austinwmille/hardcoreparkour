@@ -148,7 +148,7 @@ def upload_video(youtube, file_path, metadata):
         },
         'status': {
             'privacyStatus': 'public',  # Options: 'public', 'unlisted', 'private'
-            'selfDeclaredMadeForKids': True  # Default to "Not Made for Kids"
+            'selfDeclaredMadeForKids': False  # Default to "Not Made for Kids"
         }
     }
 
@@ -195,13 +195,13 @@ def generate_ass_karaoke_subtitles(aligned_segments, ass_path, max_words=3, paus
         "Format: Name,Fontname,Fontsize,PrimaryColour,SecondaryColour,OutlineColour,BackColour,"
         "Bold,Italic,Underline,StrikeOut,ScaleX,ScaleY,Spacing,Angle,BorderStyle,Outline,Shadow,"
         "Alignment,MarginL,MarginR,MarginV,Encoding\n"
-        # Style: Arial, size 36, primary colour = #6A0DAD (ASS BGR: &H00AD0D6A),
-        # Alignment=2 (bottom-center) with MarginV=300 (which you can adjust to push them higher).
-        "Style: Default,Arial,48,&H00AD0D6A,&H00FFFFFF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,3,2,2,10,10,900,1\n"
+        # Updated style: white text with white secondary (for karaoke highlighting) and a thicker black outline.
+        "Style: Default,Arial,48,&H00FF00FF,&H00FF00FF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,4,2,2,10,10,1280,1\n"
         "\n"
         "[Events]\n"
         "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n"
     )
+
     
     words_list = []
     for segment in aligned_segments:
