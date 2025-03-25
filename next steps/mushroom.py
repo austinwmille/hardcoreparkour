@@ -188,21 +188,20 @@ def generate_ass_karaoke_subtitles(aligned_segments, ass_path, max_words=3, paus
         "ScriptType: v4.00+\n"
         "Collisions: Normal\n"
         "PlayResX: 1280\n"
-        "PlayResY: 2160\n"  # Adjust if your resolution differs.
+        "PlayResY: 2160\n"
         "Timer: 100.0000\n"
         "\n"
         "[V4+ Styles]\n"
         "Format: Name,Fontname,Fontsize,PrimaryColour,SecondaryColour,OutlineColour,BackColour,"
         "Bold,Italic,Underline,StrikeOut,ScaleX,ScaleY,Spacing,Angle,BorderStyle,Outline,Shadow,"
         "Alignment,MarginL,MarginR,MarginV,Encoding\n"
-        # Updated style: white text with white secondary (for karaoke highlighting) and a thicker black outline.
-        "Style: Default,Arial,48,&H00FF00FF,&H00FF00FF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,4,2,2,10,10,1280,1\n"
+        # Update: primary text is black (&H00000000) and secondary (highlight) is magenta (&H00FF00FF)
+        "Style: Default,Arial,48,&H00000000,&H00FF00FF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,4,2,2,10,10,1280,1\n"
         "\n"
         "[Events]\n"
         "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n"
     )
 
-    
     words_list = []
     for segment in aligned_segments:
         if "words" in segment and segment["words"]:

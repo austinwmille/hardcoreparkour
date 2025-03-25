@@ -262,10 +262,11 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
     resized_bottom = os.path.join(output_folder, "resized_bottom.mp4")
 
     def resize_video(input_file, output_file, width):
-        """Resize video only if necessary, avoiding unnecessary re-encoding."""
+        # Resize video only if necessary, avoiding unnecessary re-encoding.
         cmd_check = [
             "ffprobe", "-v", "error", "-select_streams", "v:0",
-            "-show_entries", "stream=width,codec_name", "-of", "csv=p=0", input_file
+            "-show_entries", "stream=width,codec_name", "-of", "csv=p=0",
+            input_file
         ]
         video_info = subprocess.run(cmd_check, capture_output=True, text=True).stdout.strip()
         line = video_info.split("\n")[0].rstrip(',').strip()
@@ -298,37 +299,54 @@ def stack_videos(top_video, bottom_video, output_folder, movie_file):
                 ]
         subprocess.run(cmd, check=True)
 
-        resize_video(top_video, resized_top, target_width)
+    # Now call resize_video for both videos (outside the function definition)
+    resize_video(top_video, resized_top, target_width)
     resize_video(bottom_video, resized_bottom, target_width)
 
-    # Set final output resolution to 9:16 aspect ratio.
-    final_width = target_width
-    final_height = int(final_width * 16 / 9)
-    movie_ratio = 0.7  # Movie (top video) takes 70% of the height.
-    top_height = int(final_height * movie_ratio)
-    bottom_height = final_height - top_height
+    # Add this helper function inside stack_videos (or at the module level)
+    def get_video_height(video_file):
+        try:
+            cmd = [
+                "ffprobe", "-v", "error",
+                "-select_streams", "v:0",
+                "-show_entries", "stream=height",
+                "-of", "csv=p=0",
+                video_file
+            ]
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            return int(result.stdout.strip())
+        except Exception as e:
+            print(f"Error getting height of {video_file}: {e}")
+            return None
 
-    # Modify the filter_complex:
-    # - For each input, we force fps=30.
-    # - We crop each video to the desired height (centered vertically using (in_h - desired)/2).
-    # - Then we vertically stack and finally scale to ensure a 9:16 output.
+    # Set final output resolution to 9:16 (for example, 1080x1920)
+    final_width = 1080
+    final_height = 1920
+
+    # Instead of computing crop heights based on target ratios,
+    # we now force each clip to be cropped to 1080x960.
+    top_crop_height = 960
+    bottom_crop_height = 960
+
+    # Build the filter_complex with the new values:
+    filter_complex = (
+        f"[0:v]fps=30,crop={final_width}:{top_crop_height}:0:((in_h-{top_crop_height})/2)[v0]; "
+        f"[1:v]fps=30,crop={final_width}:{bottom_crop_height}:0:((in_h-{bottom_crop_height})/2)[v1]; "
+        f"[v0][v1]vstack=inputs=2,scale={final_width}:{final_height}[v]"
+    )
+
     cmd_stack = [
         'ffmpeg', '-y',
         '-threads', '4',
         '-i', resized_top,
         '-i', resized_bottom,
-        '-filter_complex',
-        (
-            f"[0:v]fps=30,crop={final_width}:{top_height}:0:((in_h-{top_height})/2)[v0]; "
-            f"[1:v]fps=30,crop={final_width}:{bottom_height}:0:((in_h-{bottom_height})/2)[v1]; "
-            f"[v0][v1]vstack=inputs=2,scale={final_width}:{final_height}[v]"
-        ),
+        '-filter_complex', filter_complex,
         '-map', '[v]',
         '-map', '0:a?',
         '-map', '1:a?',
         '-c:v', 'libx264',
         '-preset', 'slow',
-        '-crf', '19',
+        '-crf', '16',  # Lower CRF for higher quality
         '-c:a', 'aac',
         '-b:a', '160k',
         '-shortest',
@@ -451,4 +469,13 @@ def main():
     print("✅ Processing complete for this video.")
 
 if __name__ == "__main__":
-    main()
+    # If a command-line argument "stack" is provided, run only the stacking function.
+    if len(sys.argv) > 1 and sys.argv[1] == "stack":
+        # Provide your own paths for testing.
+        top_video = "resized_top.mp4"
+        bottom_video = "resized_bottom.mp4"
+        movie_file = "gou/20200926-Tony Hawk's 1+2 Remaster Developers React to Speedrun.mp4"
+        output_folder = "C:/Users/austi/Desktop/hardcoreparkour/random clips"
+        stack_videos(top_video, bottom_video, output_folder, movie_file)
+    else:
+        main()
