@@ -4,3 +4,5 @@ next steps/mushroom.env
 next steps/mushroom.json
 random clips/temp_karaoke_1.ass
 *.mkv
+*.sublime-project
+*.sublime-workspace
