@@ -42,9 +42,10 @@ def main():
 
     # List of video URLs (replace or extend as needed)
     video_urls = [
-        "https://www.youtube.com/watch?v=tvcgHT_sYPA",  # Example YouTube URL
-        "https://www.youtube.com/watch?v=G7NZnPWgK4Q",
-        "",
+        "https://www.youtube.com/watch?v=NsDebXNUJ2Y",
+        "https://www.youtube.com/watch?v=calabYNiSpg",
+        "https://www.youtube.com/watch?v=FfdB1DBYwoA",
+        "https://www.youtube.com/watch?v=wkiO0_uSJAk",
         # Add more video URLs here
     ]
 
@@ -55,7 +56,7 @@ def main():
             save_downloaded_url(url)      # Log the URL
             print(f"Downloaded and logged: {url}")
             # Exit after processing one video so that the workflow can continue with the next steps.
-            break
+            #break
         else:
             print(f"Already downloaded: {url}")
 
